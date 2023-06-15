@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "linknova",
 ]
 
 MIDDLEWARE = [
@@ -76,16 +77,12 @@ WSGI_APPLICATION = "proj.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": "temp_db",
-        "USER": "temp_user",
-        "PASSWORD": "temp_pass",
+        "NAME": "linknova",
+        "USER": "root",
+        "PASSWORD": "root",
         "HOST": "127.0.0.1",
         "PORT": "5432",
     },
-    # "default": {
-    #     "ENGINE": "django.db.backends.sqlite3",
-    #     "NAME": BASE_DIR / "db.sqlite3",
-    # }
 }
 
 
