@@ -23,6 +23,7 @@ class Directory(DateTimeBase):
     title = models.CharField(max_length=255, null=True, blank=True)
     about = models.TextField(null=True, blank=True)
     user = models.CharField(max_length=255)
+    tags = ArrayField(models.IntegerField())
     is_active = models.BooleanField(default=True)
     public = models.BooleanField(default=True)
     # TODO: Handle roles and permission for different users together
@@ -34,6 +35,7 @@ class Bookmark(DateTimeBase):
     title = models.CharField(max_length=1024)
     url = models.CharField(max_length=4096)
     content = models.TextField(null=True, blank=True)
+    img_url = models.CharField(max_length=4096)
     user = models.CharField(max_length=255)
     directory = models.ForeignKey(Directory, on_delete=models.CASCADE)
     tags = ArrayField(models.IntegerField())
