@@ -8,6 +8,7 @@ diesel::table! {
         title -> Text,
         url -> Text,
         content -> Nullable<Text>,
+        img_url -> Text,
         user -> Text,
         tags -> Array<Nullable<Int4>>,
         is_active -> Bool,
@@ -26,6 +27,7 @@ diesel::table! {
         title -> Nullable<Text>,
         about -> Nullable<Text>,
         user -> Text,
+        tags -> Array<Nullable<Int4>>,
         is_active -> Bool,
         public -> Bool,
     }
