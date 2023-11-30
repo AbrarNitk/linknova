@@ -32,12 +32,6 @@ pub async fn http_main() {
     let env_path = format!("{}.env", env());
     println!("Environment file path: {}", env_path);
     dotenv::from_path(env_path.as_str()).ok();
-    let socket_address: std::net::SocketAddr = (std::net::Ipv4Addr::UNSPECIFIED, port()).into();
-    println!(
-        "#### Started at: {}:{} ####",
-        socket_address.ip(),
-        socket_address.port()
-    );
 
     let pool = sqlx::postgres::PgPoolOptions::new()
         .max_connections(5)
@@ -45,9 +39,15 @@ pub async fn http_main() {
         .await
         .expect("could not connect to the database");
 
+    let socket_address: std::net::SocketAddr = (std::net::Ipv4Addr::UNSPECIFIED, port()).into();
+    println!(
+        "#### Started at: {}:{} ####",
+        socket_address.ip(),
+        socket_address.port()
+    );
+    let listener = tokio::net::TcpListener::bind(socket_address).await.expect("cannot bind the server");
     let app = router::routes(pool).await;
-    axum::Server::bind(&socket_address)
-        .serve(app.into_make_service())
+    axum::serve(listener, app.into_make_service())
         .await
         .unwrap()
 }
