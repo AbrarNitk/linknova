@@ -46,8 +46,4 @@ diesel::table! {
 
 diesel::joinable!(linknova_bookmark -> linknova_directory (directory_id));
 
-diesel::allow_tables_to_appear_in_same_query!(
-    linknova_bookmark,
-    linknova_directory,
-    linknova_tags,
-);
+diesel::allow_tables_to_appear_in_same_query!(linknova_bookmark, linknova_directory, linknova_tags,);
