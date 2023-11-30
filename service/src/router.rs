@@ -1,28 +1,30 @@
-pub async fn handler(
-    req: hyper::Request<hyper::Body>,
-) -> Result<hyper::Response<hyper::Body>, http_service::errors::RouteError> {
-    match (req.method(), req.uri().path()) {
-        (&hyper::Method::GET, "/") => {
-            let mut response = hyper::Response::new(hyper::Body::empty());
-            let resp = http_service::controller::get_user_profile()?;
-            *response.body_mut() = hyper::Body::from(serde_json::to_string(&resp)?);
-            *response.status_mut() = hyper::StatusCode::OK;
-            response.headers_mut().append(
-                hyper::header::CONTENT_TYPE,
-                hyper::http::HeaderValue::from_str("application/json").unwrap(), // TODO: Remove unwrap
-            );
-            Ok(response)
-        }
-        (&hyper::Method::POST, "/") => {
-            let mut response = hyper::Response::new(hyper::Body::empty());
-            *response.body_mut() = hyper::Body::from("POST Response");
-            *response.status_mut() = hyper::StatusCode::OK;
-            response.headers_mut().append(
-                hyper::header::CONTENT_TYPE,
-                hyper::http::HeaderValue::from_str("application/json").unwrap(), // TODO: Remove unwrap
-            );
-            Ok(response)
-        }
-        _ => todo!(),
-    }
+async fn index() -> String {
+    "index".to_string()
+}
+
+#[derive(Clone)]
+pub struct ApiContext {
+    pub db: sqlx::PgPool,
+}
+
+pub async fn routes(db: sqlx::PgPool) -> axum::Router {
+    let router = axum::Router::new()
+        .route(
+            "/linknova/v1/api/save/",
+            axum::routing::on(axum::routing::MethodFilter::POST, crate::api::save_url),
+        )
+        .route(
+            "/linknova/v1/api/get/",
+            axum::routing::on(axum::routing::MethodFilter::GET, index),
+        )
+        .route(
+            "/linknova/v1/api/create/topic/",
+            axum::routing::on(axum::routing::MethodFilter::PUT, index),
+        )
+        .route(
+            "/linknova/v1/api/create/category/",
+            axum::routing::on(axum::routing::MethodFilter::GET, index),
+        )
+        .with_state(ApiContext { db });
+    router
 }
