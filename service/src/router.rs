@@ -22,7 +22,7 @@ pub async fn routes(
         )
         .route(
             "/linknova/v1/api/get/",
-            axum::routing::on(axum::routing::MethodFilter::GET, index),
+            axum::routing::on(axum::routing::MethodFilter::GET, crate::api::get_urls),
         )
         .route(
             "/linknova/v1/api/create/topic/",

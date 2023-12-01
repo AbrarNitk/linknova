@@ -1,5 +1,3 @@
-use sqlx::ColumnIndex;
-
 pub mod api;
 pub mod controller;
 pub mod errors;

@@ -1,5 +1,5 @@
 use crate::router::ApiContext;
-use sqlx::{PgPool, Row};
+use sqlx::PgPool;
 
 #[derive(serde::Deserialize)]
 pub struct SaveRequest {
@@ -93,6 +93,7 @@ pub async fn insert_into_bookmark_dir_map(
 pub async fn categories(
     pool: &sqlx::PgPool,
 ) -> sqlx::Result<std::collections::HashMap<String, i64>> {
+    use sqlx::Row;
     let query = "SELECT id, name from directory";
     let rows: Vec<sqlx::Result<(String, i64)>> = sqlx::query(query)
         .fetch_all(pool)

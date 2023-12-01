@@ -1,6 +1,8 @@
+pub mod get;
 pub mod save;
 
 use axum::response::IntoResponse;
+pub use get::get_urls;
 pub use save::save_url;
 
 fn success<T: serde::Serialize>(
