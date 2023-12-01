@@ -1,3 +1,5 @@
+use sqlx::ColumnIndex;
+
 pub mod api;
 pub mod controller;
 pub mod errors;
@@ -10,7 +12,7 @@ fn env() -> String {
     }
 }
 
-fn read_env_with_parse<T: std::str::FromStr<Err = std::num::ParseIntError>>(v: &str) -> T {
+fn read_env_with_parse<T: std::str::FromStr<Err=std::num::ParseIntError>>(v: &str) -> T {
     std::env::var(v)
         .expect(&format!("Expected env: <{v:?}>"))
         .parse::<T>()
@@ -43,6 +45,9 @@ pub async fn http_main() {
         .await
         .expect("could not connect to the database");
 
+    let categories = api::save::categories(&pool).await.expect("not able to the categories");
+    println!("categories: {:?}", categories);
+
     let socket_address: std::net::SocketAddr =
         (std::net::Ipv4Addr::UNSPECIFIED, read_env_with_parse("PORT")).into();
     println!(
@@ -53,7 +58,7 @@ pub async fn http_main() {
     let listener = tokio::net::TcpListener::bind(socket_address)
         .await
         .expect("cannot bind the address");
-    let app = router::routes(pool).await;
+    let app = router::routes(pool, categories).await;
     axum::serve(listener, app.into_make_service())
         .await
         .unwrap()

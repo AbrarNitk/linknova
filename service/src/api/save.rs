@@ -1,6 +1,5 @@
 use crate::router::ApiContext;
-use axum::response::IntoResponse;
-use sqlx::PgPool;
+use sqlx::{PgPool, Row};
 
 #[derive(serde::Deserialize)]
 pub struct SaveRequest {
@@ -10,6 +9,53 @@ pub struct SaveRequest {
     pub categories: Vec<String>,
     pub tags: Vec<String>,
 }
+
+pub async fn save_url(
+    axum::extract::State(ctx): axum::extract::State<ApiContext>,
+    axum::Json(request): axum::Json<SaveRequest>,
+) -> axum::response::Response {
+    match save_url_(&ctx, &request).await {
+        Ok(r) => super::success(axum::http::StatusCode::CREATED, r),
+        Err(e) => {
+            eprintln!("err: {:?}", e);
+            super::error(
+                axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+                "some-error-occurred",
+            )
+        }
+    }
+}
+
+#[derive(thiserror::Error, std::fmt::Debug)]
+pub enum SaveError {
+    #[error("SQLxError: {}", _0)]
+    SQLx(#[from] sqlx::Error),
+    #[error("DefaultCategoryNotFoundError")]
+    DefaultCategoryNotFound,
+
+}
+
+#[derive(serde::Serialize)]
+pub struct SaveResponse {
+    pub id: i64,
+}
+
+async fn save_url_(ctx: &ApiContext, request: &SaveRequest) -> Result<SaveResponse, SaveError> {
+    let bookmark_id = insert_into_urls(request, &ctx.db).await?;
+    let mut v: Vec<(i64, i64)> = vec![];
+    for cat in request.categories.iter() {
+        match ctx.category_map.get(cat) {
+            Some(cat_id) => v.push((bookmark_id, *cat_id as i64)),
+            None => {
+                let default_cat = ctx.category_map.get("default").ok_or_else(|| SaveError::DefaultCategoryNotFound)?;
+                v.push((bookmark_id, *default_cat as i64));
+            }
+        }
+    }
+    insert_into_bookmark_dir_map(v.as_slice(), &ctx.db).await?;
+    Ok(SaveResponse { id: bookmark_id })
+}
+
 
 pub async fn insert_into_urls(url: &SaveRequest, pool: &PgPool) -> sqlx::Result<i64> {
     use sqlx::Row;
@@ -26,70 +72,30 @@ pub async fn insert_into_urls(url: &SaveRequest, pool: &PgPool) -> sqlx::Result<
     row.try_get::<i64, _>("id")
 }
 
-fn success<T: serde::Serialize>(
-    status: axum::http::StatusCode,
-    data: T,
-) -> axum::response::Response {
-    #[derive(serde::Serialize)]
-    struct Success<T> {
-        data: T,
-        success: bool,
-    }
-    (
-        status,
-        axum::Json(Success {
-            data,
-            success: true,
-        }),
-    )
-        .into_response()
-}
 
-fn error<T: serde::Serialize>(
-    status: axum::http::StatusCode,
-    error: T,
-) -> axum::response::Response {
-    #[derive(serde::Serialize)]
-    struct Error<T> {
-        error: T,
-        success: bool,
-    }
-    (
-        status,
-        axum::Json(Error {
-            error,
-            success: false,
-        }),
-    )
-        .into_response()
-}
-
-pub async fn save_url(
-    axum::extract::State(ctx): axum::extract::State<ApiContext>,
-    axum::Json(request): axum::Json<SaveRequest>,
-) -> axum::response::Response {
-    match save_url_(&request, &ctx.db).await {
-        Ok(r) => success(axum::http::StatusCode::CREATED, "".to_string()),
-        Err(e) => {
-            eprintln!("err: {:?}", e);
-            error(
-                axum::http::StatusCode::INTERNAL_SERVER_ERROR,
-                "some-error-occurred",
-            )
-        }
-    }
-}
-
-#[derive(thiserror::Error, std::fmt::Debug)]
-pub enum SaveError {
-    #[error("SQLxError: {}", _0)]
-    SQLx(#[from] sqlx::Error),
-}
-
-async fn save_url_(request: &SaveRequest, pool: &sqlx::PgPool) -> Result<(), SaveError> {
-    let insert_id = insert_into_urls(request, pool).await?;
-    println!("id: {}", insert_id);
+pub async fn insert_into_bookmark_dir_map(map: &[(i64, i64)], pool: &sqlx::PgPool) -> sqlx::Result<()> {
+    let query = r#"
+            INSERT into bookmark_directory_map(bookmark_id, directory_id)
+            SELECT * from UNNEST($1, $2)
+            RETURNING id
+    "#;
+    sqlx::query(query)
+        .bind(map.iter().map(|x| x.0).collect::<Vec<_>>())
+        .bind(map.iter().map(|x| x.1).collect::<Vec<_>>())
+        .execute(pool)
+        .await?;
     Ok(())
+}
+
+pub async fn categories(pool: &sqlx::PgPool) -> sqlx::Result<std::collections::HashMap<String, i64>> {
+    let query = "SELECT id, name from directory";
+    let rows: Vec<sqlx::Result<(String, i64)>> = sqlx::query(query)
+        .fetch_all(pool)
+        .await?
+        .into_iter()
+        .map(|r| -> sqlx::Result<(String, i64)> { Ok((r.try_get("name")?, r.try_get("id")?)) })
+        .collect();
+    rows.into_iter().collect()
 }
 
 pub async fn _save_url(
@@ -121,10 +127,6 @@ pub async fn _save_url(
         .into_iter()
         .map(|row| (row.get(0), row.get(1)))
         .collect();
-
-    // let rows = sqlx::query!("select id, name from directory where name in ('default')")
-    //     .fetch_all(&ctx.db)
-    //     .await.unwrap();
 
     for (c1, c2) in &rows {
         println!("{}:{}", c1, c2);
