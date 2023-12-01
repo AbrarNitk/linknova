@@ -12,7 +12,7 @@ fn env() -> String {
     }
 }
 
-fn read_env_with_parse<T: std::str::FromStr<Err=std::num::ParseIntError>>(v: &str) -> T {
+fn read_env_with_parse<T: std::str::FromStr<Err = std::num::ParseIntError>>(v: &str) -> T {
     std::env::var(v)
         .expect(&format!("Expected env: <{v:?}>"))
         .parse::<T>()
@@ -45,7 +45,9 @@ pub async fn http_main() {
         .await
         .expect("could not connect to the database");
 
-    let categories = api::save::categories(&pool).await.expect("not able to the categories");
+    let categories = api::save::categories(&pool)
+        .await
+        .expect("not able to the categories");
     println!("categories: {:?}", categories);
 
     let socket_address: std::net::SocketAddr =

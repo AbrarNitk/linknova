@@ -32,7 +32,6 @@ pub enum SaveError {
     SQLx(#[from] sqlx::Error),
     #[error("DefaultCategoryNotFoundError")]
     DefaultCategoryNotFound,
-
 }
 
 #[derive(serde::Serialize)]
@@ -47,7 +46,10 @@ async fn save_url_(ctx: &ApiContext, request: &SaveRequest) -> Result<SaveRespon
         match ctx.category_map.get(cat) {
             Some(cat_id) => v.push((bookmark_id, *cat_id as i64)),
             None => {
-                let default_cat = ctx.category_map.get("default").ok_or_else(|| SaveError::DefaultCategoryNotFound)?;
+                let default_cat = ctx
+                    .category_map
+                    .get("default")
+                    .ok_or_else(|| SaveError::DefaultCategoryNotFound)?;
                 v.push((bookmark_id, *default_cat as i64));
             }
         }
@@ -55,7 +57,6 @@ async fn save_url_(ctx: &ApiContext, request: &SaveRequest) -> Result<SaveRespon
     insert_into_bookmark_dir_map(v.as_slice(), &ctx.db).await?;
     Ok(SaveResponse { id: bookmark_id })
 }
-
 
 pub async fn insert_into_urls(url: &SaveRequest, pool: &PgPool) -> sqlx::Result<i64> {
     use sqlx::Row;
@@ -72,8 +73,10 @@ pub async fn insert_into_urls(url: &SaveRequest, pool: &PgPool) -> sqlx::Result<
     row.try_get::<i64, _>("id")
 }
 
-
-pub async fn insert_into_bookmark_dir_map(map: &[(i64, i64)], pool: &sqlx::PgPool) -> sqlx::Result<()> {
+pub async fn insert_into_bookmark_dir_map(
+    map: &[(i64, i64)],
+    pool: &sqlx::PgPool,
+) -> sqlx::Result<()> {
     let query = r#"
             INSERT into bookmark_directory_map(bookmark_id, directory_id)
             SELECT * from UNNEST($1, $2)
@@ -87,7 +90,9 @@ pub async fn insert_into_bookmark_dir_map(map: &[(i64, i64)], pool: &sqlx::PgPoo
     Ok(())
 }
 
-pub async fn categories(pool: &sqlx::PgPool) -> sqlx::Result<std::collections::HashMap<String, i64>> {
+pub async fn categories(
+    pool: &sqlx::PgPool,
+) -> sqlx::Result<std::collections::HashMap<String, i64>> {
     let query = "SELECT id, name from directory";
     let rows: Vec<sqlx::Result<(String, i64)>> = sqlx::query(query)
         .fetch_all(pool)

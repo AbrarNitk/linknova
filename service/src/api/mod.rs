@@ -3,7 +3,6 @@ pub mod save;
 use axum::response::IntoResponse;
 pub use save::save_url;
 
-
 fn success<T: serde::Serialize>(
     status: axum::http::StatusCode,
     data: T,

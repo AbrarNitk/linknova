@@ -11,7 +11,10 @@ pub struct ApiContext {
     pub category_map: std::collections::HashMap<CategoryName, CategoryID>,
 }
 
-pub async fn routes(db: sqlx::PgPool, categories: std::collections::HashMap<CategoryName, CategoryID>) -> axum::Router {
+pub async fn routes(
+    db: sqlx::PgPool,
+    categories: std::collections::HashMap<CategoryName, CategoryID>,
+) -> axum::Router {
     let router = axum::Router::new()
         .route(
             "/linknova/v1/api/save/",
@@ -29,6 +32,9 @@ pub async fn routes(db: sqlx::PgPool, categories: std::collections::HashMap<Cate
             "/linknova/v1/api/create/category/",
             axum::routing::on(axum::routing::MethodFilter::GET, index),
         )
-        .with_state(ApiContext { db, category_map: categories });
+        .with_state(ApiContext {
+            db,
+            category_map: categories,
+        });
     router
 }
