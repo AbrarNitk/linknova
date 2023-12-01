@@ -39,11 +39,10 @@ class Directory(DateTimeBase):
 
 
 class Bookmark(DateTimeBase):
-    title = models.CharField(max_length=1024)
+    title = models.CharField(max_length=1024, blank=True)
     url = models.CharField(max_length=4096)
     content = models.TextField(null=True, blank=True)
     is_active = models.BooleanField(default=True)
-
     # img_url = models.CharField(max_length=4096, null=True, blank=True)
     # modified = models.BooleanField(default=False)
     # archived = models.BooleanField(default=False)

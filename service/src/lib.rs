@@ -10,7 +10,7 @@ fn env() -> String {
     }
 }
 
-fn read_env_with_parse<T: std::str::FromStr<Err=std::num::ParseIntError>>(v: &str) -> T {
+fn read_env_with_parse<T: std::str::FromStr<Err = std::num::ParseIntError>>(v: &str) -> T {
     std::env::var(v)
         .expect(&format!("Expected env: <{v:?}>"))
         .parse::<T>()
@@ -20,7 +20,6 @@ fn read_env_with_parse<T: std::str::FromStr<Err=std::num::ParseIntError>>(v: &st
 fn read_env(v: &str) -> String {
     std::env::var(v).expect(&format!("Expected env: <{v:?}>"))
 }
-
 
 pub async fn http_main() {
     // Setting the environment variables
@@ -44,13 +43,16 @@ pub async fn http_main() {
         .await
         .expect("could not connect to the database");
 
-    let socket_address: std::net::SocketAddr = (std::net::Ipv4Addr::UNSPECIFIED, read_env_with_parse("PORT")).into();
+    let socket_address: std::net::SocketAddr =
+        (std::net::Ipv4Addr::UNSPECIFIED, read_env_with_parse("PORT")).into();
     println!(
         "#### Started at: {}:{} ####",
         socket_address.ip(),
         socket_address.port()
     );
-    let listener = tokio::net::TcpListener::bind(socket_address).await.expect("cannot bind the address");
+    let listener = tokio::net::TcpListener::bind(socket_address)
+        .await
+        .expect("cannot bind the address");
     let app = router::routes(pool).await;
     axum::serve(listener, app.into_make_service())
         .await
