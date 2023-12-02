@@ -1,5 +1,5 @@
-use sqlx::Row;
 use crate::router::ApiContext;
+use sqlx::Row;
 
 #[derive(serde::Deserialize, Debug)]
 pub struct GetUrlQuery {
@@ -19,7 +19,7 @@ pub async fn get_urls(
         .split(',')
         .flat_map(|c| ctx.category_map.get(c).map(|x| *x))
         .collect::<Vec<i64>>();
-    let p_no = query.p_no.unwrap_or(1);// todo: handle the negative case also
+    let p_no = query.p_no.unwrap_or(1); // todo: handle the negative case also
     let size = query.size.unwrap_or(10);
     match get_urls_(&ctx, cats, p_no, size).await {
         Ok(r) => super::success(axum::http::StatusCode::OK, r),
@@ -53,7 +53,6 @@ pub struct UrlRow {
     pub url: String,
 }
 
-
 pub async fn get_urls_(
     ctx: &ApiContext,
     categories: Vec<i64>,
@@ -62,7 +61,8 @@ pub async fn get_urls_(
 ) -> Result<GetUrlsResponse, GetUrlsError> {
     let mut query = "select DISTINCT ON (bookmark.id) bookmark.id, bookmark.title, bookmark.url from bookmark join bookmark_directory_map on bookmark.id=bookmark_directory_map.bookmark_id ".to_string();
     if !categories.is_empty() {
-        query.push_str(" where bookmark_directory_map.directory_id = ANY($1) and is_active = true ");
+        query
+            .push_str(" where bookmark_directory_map.directory_id = ANY($1) and is_active = true ");
         query.push_str(" order by bookmark.id, created_on DESC OFFSET $2 LIMIT $3");
     } else {
         query.push_str(" where is_active = true ");
@@ -74,18 +74,24 @@ pub async fn get_urls_(
         db_query = db_query.bind(&categories[..]);
     }
 
-    let offset: i64 = if p_no <= 1 { 0 } else { ((p_no - 1) * size) - 1 };
+    let offset: i64 = if p_no <= 1 {
+        0
+    } else {
+        ((p_no - 1) * size) - 1
+    };
 
     let rows: Vec<UrlRow> = db_query
         .bind(offset)
         .bind(size + 1)
-        .fetch_all(&ctx.db).await?
+        .fetch_all(&ctx.db)
+        .await?
         .into_iter()
         .map(|r| UrlRow {
             id: r.get(0),
             title: r.get(1),
             url: r.get(2),
-        }).collect();
+        })
+        .collect();
 
     let mut next = None;
     if rows.len() > size as usize {
@@ -106,5 +112,3 @@ pub async fn get_urls_(
 
 //    let q = "select * from bookmark join bookmark_directory_map on bookmark.id=bookmark_directory_map.bookmark_id";
 //    let q = r#"select bookmark.* from bookmark join bookmark_directory_map on bookmark.id=bookmark_directory_map.bookmark_id where bookmark_directory_map.directory_id in (1, 2, 3, 4, 5) and is_active = true order by created_on desc OFFSET 2 LIMIT 3"#;
-
-
