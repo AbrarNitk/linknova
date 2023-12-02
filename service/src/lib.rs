@@ -60,8 +60,12 @@ pub async fn http_main() {
     let listener = tokio::net::TcpListener::bind(socket_address)
         .await
         .expect("cannot bind the address");
+
     let app = router::routes(pool, categories).await;
-    axum::serve(listener, app.into_make_service())
+    let hn = hn::router::router().await;
+    let app_router = app.merge(hn);
+
+    axum::serve(listener, app_router.into_make_service())
         .await
         .unwrap()
 }

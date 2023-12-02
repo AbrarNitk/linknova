@@ -9,6 +9,10 @@ pub async fn router() -> axum::Router {
             axum::routing::get(super::controller::get_item),
         )
         .route(
+            "/hn/v1/api/user/:username/",
+            axum::routing::get(super::controller::get_user),
+        )
+        .route(
             "/hn/v1/api/top-stories/",
             axum::routing::get(super::controller::top_stories),
         )
@@ -17,4 +21,3 @@ pub async fn router() -> axum::Router {
             axum::routing::get(super::controller::ask_stories),
         )
 }
-
