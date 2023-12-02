@@ -2,6 +2,8 @@ pub mod api;
 pub mod controller;
 pub mod errors;
 pub mod router;
+pub mod hn;
+pub mod utils;
 
 fn env() -> String {
     match std::env::var("ENV") {
@@ -10,7 +12,7 @@ fn env() -> String {
     }
 }
 
-fn read_env_with_parse<T: std::str::FromStr<Err = std::num::ParseIntError>>(v: &str) -> T {
+fn read_env_with_parse<T: std::str::FromStr<Err=std::num::ParseIntError>>(v: &str) -> T {
     std::env::var(v)
         .expect(&format!("Expected env: <{v:?}>"))
         .parse::<T>()
