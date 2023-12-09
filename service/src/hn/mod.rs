@@ -3,4 +3,7 @@ pub mod controller;
 pub mod router;
 
 #[derive(thiserror::Error, Debug)]
-pub enum HNError {}
+pub enum HNError {
+    #[error("HttpReqwestError: {}", _0)]
+    HttpReqwestError(#[from] crate::utils::http::ReqwestError),
+}
