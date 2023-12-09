@@ -1,5 +1,3 @@
-use std::str::FromStr;
-
 #[derive(thiserror::Error, Debug)]
 pub enum ReqwestError {
     #[error("ReqwestError: {}", _0)]

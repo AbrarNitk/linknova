@@ -5,6 +5,8 @@ pub mod hn;
 pub mod router;
 pub mod utils;
 
+pub use api::{error, success};
+
 fn env() -> String {
     match std::env::var("ENV") {
         Ok(env) => env.to_lowercase(),

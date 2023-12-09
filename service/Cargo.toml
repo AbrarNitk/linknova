@@ -10,6 +10,7 @@ axum = "0.7"
 tokio = { version = "1", features = ["full"] }
 sqlx = { version = "0.7", features = ["postgres", "json", "chrono", "runtime-tokio"] }
 reqwest = { version = "0.11", features = ["default", "json"] }
+futures = "0.3"
 dotenv = { version = "0.15" }
 thiserror = { workspace = true }
 tower-http = { version = "0.5", features = ["trace"] }

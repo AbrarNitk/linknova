@@ -5,7 +5,7 @@ use axum::response::IntoResponse;
 pub use get::get_urls;
 pub use save::save_url;
 
-fn success<T: serde::Serialize>(
+pub fn success<T: serde::Serialize>(
     status: axum::http::StatusCode,
     data: T,
 ) -> axum::response::Response {
@@ -24,7 +24,7 @@ fn success<T: serde::Serialize>(
         .into_response()
 }
 
-fn error<T: serde::Serialize>(
+pub fn error<T: serde::Serialize>(
     status: axum::http::StatusCode,
     error: T,
 ) -> axum::response::Response {
