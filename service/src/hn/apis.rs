@@ -68,7 +68,7 @@ pub struct HNUserDetails {
 }
 
 pub async fn user_details(username: &str) -> Result<HNUserDetails, super::HNError> {
-    let url = format!(" https://hacker-news.firebaseio.com/v0/user/{}.json", username);
+    let url = format!(" https://hacker-news.firebaseio.com/v0/user/{}.json", username.trim());
     let user_details: HNUserDetails = crate::utils::http::get(&url, &Default::default()).await?;
     Ok(user_details)
 }
