@@ -1,7 +1,3 @@
-async fn index() -> String {
-    "".to_string()
-}
-
 pub async fn router() -> axum::Router {
     axum::Router::new()
         .route(

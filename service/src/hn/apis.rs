@@ -30,13 +30,6 @@ pub async fn get_items(item_ids: &[i64]) -> Result<Vec<HNItem>, super::HNError> 
     Ok(response)
 }
 
-#[derive(serde::Serialize)]
-pub struct HNUserDetails {}
-
-pub async fn users(username: &str) -> Result<HNUserDetails, super::HNError> {
-    Ok(HNUserDetails {})
-}
-
 pub async fn max_item_id() -> Result<i64, super::HNError> {
     Ok(1)
 }
@@ -63,4 +56,19 @@ pub async fn ask_stories() -> Result<Vec<AskStory>, super::HNError> {
     let items_ids: Vec<i64> = crate::utils::http::get(&url, &Default::default()).await?;
     let items = get_items(items_ids.as_slice()).await?;
     Ok(vec![AskStory { items }])
+}
+
+#[derive(serde::Serialize, serde::Deserialize)]
+pub struct HNUserDetails {
+    pub about: Option<String>,
+    pub created: u64,
+    pub id: String,
+    pub karma: Option<i32>,
+    pub submitted: Option<Vec<i64>>,
+}
+
+pub async fn user_details(username: &str) -> Result<HNUserDetails, super::HNError> {
+    let url = format!(" https://hacker-news.firebaseio.com/v0/user/{}.json", username);
+    let user_details: HNUserDetails = crate::utils::http::get(&url, &Default::default()).await?;
+    Ok(user_details)
 }
