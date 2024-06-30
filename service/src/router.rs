@@ -6,7 +6,7 @@ type CategoryName = String;
 type CategoryID = i64;
 
 #[derive(Clone)]
-pub struct ApiContext {
+pub struct Ctx {
     pub db: sqlx::PgPool,
     pub category_map: std::collections::HashMap<CategoryName, CategoryID>,
 }
@@ -32,7 +32,7 @@ pub async fn routes(
             "/linknova/v1/api/create/category/",
             axum::routing::on(axum::routing::MethodFilter::GET, index),
         )
-        .with_state(ApiContext {
+        .with_state(Ctx {
             db,
             category_map: categories,
         });

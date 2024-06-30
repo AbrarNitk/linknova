@@ -1,6 +1,7 @@
 [workspace]
 members = ["service", "service/db"]
 exclude = ["etc", "dj"]
+resolver = "2"
 
 [workspace.dependencies]
 thiserror = "1"
@@ -10,4 +11,9 @@ serde_json = "1"
 serde_derive = "1"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
-tracing-forest = { version = "0.1", features = ["ansi", "smallvec", "serde", "tokio"] }
+tracing-forest = { version = "0.1", features = [
+    "ansi",
+    "smallvec",
+    "serde",
+    "tokio",
+] }

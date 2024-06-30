@@ -1,4 +1,4 @@
-use crate::router::ApiContext;
+use crate::router::Ctx;
 use sqlx::PgPool;
 
 #[derive(serde::Deserialize)]
@@ -11,7 +11,7 @@ pub struct SaveRequest {
 }
 
 pub async fn save_url(
-    axum::extract::State(ctx): axum::extract::State<ApiContext>,
+    axum::extract::State(ctx): axum::extract::State<Ctx>,
     axum::Json(request): axum::Json<SaveRequest>,
 ) -> axum::response::Response {
     match save_url_(&ctx, &request).await {
@@ -39,7 +39,7 @@ pub struct SaveResponse {
     pub id: i64,
 }
 
-async fn save_url_(ctx: &ApiContext, request: &SaveRequest) -> Result<SaveResponse, SaveError> {
+async fn save_url_(ctx: &Ctx, request: &SaveRequest) -> Result<SaveResponse, SaveError> {
     let bookmark_id = insert_into_urls(request, &ctx.db).await?;
     let mut v: Vec<(i64, i64)> = vec![];
     for cat in request.categories.iter() {
@@ -105,7 +105,7 @@ pub async fn categories(
 }
 
 pub async fn _save_url(
-    axum::extract::State(ctx): axum::extract::State<ApiContext>,
+    axum::extract::State(ctx): axum::extract::State<Ctx>,
     axum::Json(request): axum::Json<SaveRequest>,
 ) -> String {
     use sqlx::Row;

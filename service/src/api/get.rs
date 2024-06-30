@@ -1,4 +1,4 @@
-use crate::router::ApiContext;
+use crate::router::Ctx;
 use sqlx::Row;
 
 #[derive(serde::Deserialize, Debug)]
@@ -9,7 +9,7 @@ pub struct GetUrlQuery {
 }
 
 pub async fn get_urls(
-    axum::extract::State(ctx): axum::extract::State<ApiContext>,
+    axum::extract::State(ctx): axum::extract::State<Ctx>,
     axum::extract::Query(query): axum::extract::Query<GetUrlQuery>,
 ) -> axum::response::Response {
     // get all the category ids from rh cache
@@ -54,7 +54,7 @@ pub struct UrlRow {
 }
 
 pub async fn get_urls_(
-    ctx: &ApiContext,
+    ctx: &Ctx,
     categories: Vec<i64>,
     p_no: i64,
     size: i64,

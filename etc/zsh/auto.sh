@@ -1,4 +1,4 @@
-export PYTHONPATH=${PROJDIR}/dj
+export PYTHONPATH=${PYTHONPATH}:${PROJDIR}/dj
 export DIESEL_CONFIG_FILE=${PROJDIR}/diesel.toml
 
 DATABASE_NAME=linknova
