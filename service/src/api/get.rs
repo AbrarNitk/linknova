@@ -114,6 +114,3 @@ pub async fn get_urls_(
         rows: rows.into_iter().take(size as usize).collect(),
     })
 }
-
-//    let q = "select * from bookmark join bookmark_directory_map on bookmark.id=bookmark_directory_map.bookmark_id";
-//    let q = r#"select bookmark.* from bookmark join bookmark_directory_map on bookmark.id=bookmark_directory_map.bookmark_id where bookmark_directory_map.directory_id in (1, 2, 3, 4, 5) and is_active = true order by created_on desc OFFSET 2 LIMIT 3"#;

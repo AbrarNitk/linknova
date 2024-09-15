@@ -34,7 +34,7 @@ pub async fn routes(
         )
         .route(
             "/linknova/v1/api/topic/create/",
-            axum::routing::on(axum::routing::MethodFilter::PUT, index),
+            axum::routing::on(axum::routing::MethodFilter::PUT, crate::api::topic::create),
         )
         .route(
             "/linknova/v1/api/category/create/",

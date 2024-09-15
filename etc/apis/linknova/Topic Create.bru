@@ -1,0 +1,19 @@
+meta {
+  name: Topic Create
+  type: http
+  seq: 4
+}
+
+put {
+  url: http://127.0.0.1:8000/linknova/v1/api/topic/create/
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "postgres",
+    "description": "this contains link about",
+    "categories" : []
+  }
+}

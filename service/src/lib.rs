@@ -47,7 +47,7 @@ pub async fn http_main() {
         .await
         .expect("could not connect to the database");
 
-    let categories = api::save::categories(&pool)
+    let categories = api::category::categories(&pool)
         .await
         .expect("not able to the categories");
     println!("categories: {:?}", categories);
