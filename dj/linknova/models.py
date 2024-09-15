@@ -13,6 +13,7 @@ class DateTimeBase(models.Model):
         abstract = True
 
 
+#
 class Topic(DateTimeBase):
     name = models.CharField(max_length=255, db_index=True, unique=True)
     description = models.CharField(max_length=255)
@@ -21,7 +22,7 @@ class Topic(DateTimeBase):
     class Meta:
         db_table = "linknova_topic"
 
-
+# Directory means categories
 class Directory(DateTimeBase):
     name = models.CharField(max_length=255, db_index=True, unique=True)
     title = models.CharField(max_length=255, null=True, blank=True)
@@ -52,6 +53,8 @@ class Bookmark(DateTimeBase):
         db_table = "linknova_bookmark"
 
 
+# a bookmark can belongs to multiple categories
+# a category can
 class BookmarkDirectoryMapping(models.Model):
     bookmark = models.ForeignKey(Bookmark, on_delete=models.CASCADE)
     directory = models.ForeignKey(Directory, on_delete=models.CASCADE)

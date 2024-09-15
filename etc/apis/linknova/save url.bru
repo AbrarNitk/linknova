@@ -1,0 +1,21 @@
+meta {
+  name: save url
+  type: http
+  seq: 2
+}
+
+post {
+  url: http://127.0.0.1:8000/linknova/v1/api/save/
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "title": "this is optional",
+    "url": "url to store",
+    "app": "app-name optional",
+    "categories": ["postgres"],
+    "tags": ["some tags to help in searching"]
+  }
+}

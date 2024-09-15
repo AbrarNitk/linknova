@@ -40,7 +40,7 @@ pub enum GetUrlsError {
 }
 
 #[derive(serde::Serialize)]
-pub struct GetUrlsResponse {
+pub struct ListUrlResponse {
     prev: Option<i64>,
     next: Option<i64>,
     rows: Vec<UrlRow>,
@@ -49,8 +49,10 @@ pub struct GetUrlsResponse {
 #[derive(sqlx::FromRow, serde::Serialize)]
 pub struct UrlRow {
     pub id: i64,
-    pub title: String,
+    pub title: Option<String>,
     pub url: String,
+    pub tags: Vec<String>,
+    pub categories: Vec<String>
 }
 
 pub async fn get_urls_(
@@ -58,7 +60,7 @@ pub async fn get_urls_(
     categories: Vec<i64>,
     p_no: i64,
     size: i64,
-) -> Result<GetUrlsResponse, GetUrlsError> {
+) -> Result<ListUrlResponse, GetUrlsError> {
     let mut query = "select DISTINCT ON (bookmark.id) bookmark.id, bookmark.title, bookmark.url from linknova_bookmark join linknova_bookmark_directory_map on bookmark.id=bookmark_directory_map.bookmark_id ".to_string();
     if !categories.is_empty() {
         query
@@ -90,6 +92,9 @@ pub async fn get_urls_(
             id: r.get(0),
             title: r.get(1),
             url: r.get(2),
+            tags: vec![],
+            categories: vec![]
+
         })
         .collect();
 
@@ -103,7 +108,7 @@ pub async fn get_urls_(
         prev = Some(p_no - 1);
     }
 
-    Ok(GetUrlsResponse {
+    Ok(ListUrlResponse {
         prev,
         next,
         rows: rows.into_iter().take(size as usize).collect(),

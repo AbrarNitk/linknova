@@ -29,15 +29,15 @@ pub async fn routes(
             axum::routing::on(axum::routing::MethodFilter::POST, crate::api::save_url),
         )
         .route(
-            "/linknova/v1/api/get/",
+            "/linknova/v1/api/list/",
             axum::routing::on(axum::routing::MethodFilter::GET, crate::api::get_urls),
         )
         .route(
-            "/linknova/v1/api/create/topic/",
+            "/linknova/v1/api/topic/create/",
             axum::routing::on(axum::routing::MethodFilter::PUT, index),
         )
         .route(
-            "/linknova/v1/api/create/category/",
+            "/linknova/v1/api/category/create/",
             axum::routing::on(axum::routing::MethodFilter::GET, index),
         )
         .with_state(Ctx {
