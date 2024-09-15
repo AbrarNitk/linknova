@@ -39,7 +39,8 @@ pub async fn _create(pool: &sqlx::PgPool, req: CreateRequest) -> Result<i64, Cre
     let now = chrono::Utc::now();
     let (category_id,): (i64,) = sqlx::query_as(query)
         .bind(&req.name)
-        .bind(true)
+        .bind(&req.title)
+        .bind(&req.about)
         .bind(now)
         .bind(now)
         .fetch_one(pool)
@@ -141,7 +142,7 @@ pub async fn categories(
 // map: (category_id, topic_id)
 pub async fn cat_topic_map(pool: &sqlx::PgPool, map: &[(i64, i64)]) -> sqlx::Result<()> {
     let query = r#"
-            INSERT into linknova_bookmark_category_map(category_id, topic_id)
+            INSERT into linknova_topic_category_map(category_id, topic_id)
             SELECT * from UNNEST($1, $2)
             RETURNING id
     "#;
