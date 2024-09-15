@@ -23,6 +23,21 @@ pub async fn create(
     }
 }
 
+pub async fn list(
+    axum::extract::State(ctx): axum::extract::State<Ctx>,
+) -> axum::response::Response {
+    match _list(&ctx.db).await {
+        Ok(r) => super::success(axum::http::StatusCode::CREATED, r),
+        Err(e) => {
+            eprintln!("err: {:?}", e);
+            super::error(
+                axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+                "some-error-occurred",
+            )
+        }
+    }
+}
+
 pub async fn _create(pool: &sqlx::PgPool, req: TopicCreate) -> Result<i64, CreateError> {
     let topic_id = upsert_topic(pool, &req).await?;
     if !req.categories.is_empty() {
@@ -34,6 +49,20 @@ pub async fn _create(pool: &sqlx::PgPool, req: TopicCreate) -> Result<i64, Creat
         super::category::upsert_categories(pool, &cats).await?;
     }
     Ok(topic_id)
+}
+
+pub async fn _list(
+    pool: &sqlx::PgPool,
+) -> Result<std::collections::HashMap<String, i64>, sqlx::Error> {
+    use sqlx::Row;
+    let query = "SELECT id, name from linknova_topic";
+    let rows: Vec<sqlx::Result<(String, i64)>> = sqlx::query(query)
+        .fetch_all(pool)
+        .await?
+        .into_iter()
+        .map(|r| -> sqlx::Result<(String, i64)> { Ok((r.try_get("name")?, r.try_get("id")?)) })
+        .collect();
+    rows.into_iter().collect()
 }
 
 pub async fn upsert_topic(pool: &sqlx::PgPool, req: &TopicCreate) -> Result<i64, CreateError> {

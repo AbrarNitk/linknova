@@ -24,6 +24,21 @@ pub async fn create(
     }
 }
 
+pub async fn list(
+    axum::extract::State(ctx): axum::extract::State<Ctx>,
+) -> axum::response::Response {
+    match categories(&ctx.db).await {
+        Ok(r) => super::success(axum::http::StatusCode::CREATED, r),
+        Err(e) => {
+            eprintln!("err: {:?}", e);
+            super::error(
+                axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+                "some-error-occurred",
+            )
+        }
+    }
+}
+
 pub async fn _create(pool: &sqlx::PgPool, req: CreateRequest) -> Result<i64, CreateError> {
     let query = r#"
         INSERT INTO linknova_category(name, title, about, created_on, updated_on)
@@ -144,6 +159,7 @@ pub async fn cat_topic_map(pool: &sqlx::PgPool, map: &[(i64, i64)]) -> sqlx::Res
     let query = r#"
             INSERT into linknova_topic_category_map(category_id, topic_id)
             SELECT * from UNNEST($1, $2)
+            ON CONFLICT (category_id, topic_id) DO NOTHING
             RETURNING id
     "#;
     sqlx::query(query)

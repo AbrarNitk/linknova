@@ -47,6 +47,7 @@ class TopicCategoryMapping(models.Model):
 
     class Meta:
         db_table = "linknova_topic_category_map"
+        unique_together = [["category", "topic"]]
 
 
 class Bookmark(DateTimeBase):
@@ -72,3 +73,4 @@ class BookmarkCategoryMapping(models.Model):
 
     class Meta:
         db_table = "linknova_bookmark_category_map"
+        unique_together = [["category", "bookmark"]]

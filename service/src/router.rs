@@ -1,4 +1,3 @@
-
 type CategoryName = String;
 type CategoryID = i64;
 
@@ -34,8 +33,19 @@ pub async fn routes(
             axum::routing::on(axum::routing::MethodFilter::PUT, crate::api::topic::create),
         )
         .route(
+            "/linknova/v1/api/topic/list/",
+            axum::routing::on(axum::routing::MethodFilter::GET, crate::api::topic::list),
+        )
+        .route(
             "/linknova/v1/api/category/create/",
-            axum::routing::on(axum::routing::MethodFilter::PUT, crate::api::category::create),
+            axum::routing::on(
+                axum::routing::MethodFilter::PUT,
+                crate::api::category::create,
+            ),
+        )
+        .route(
+            "/linknova/v1/api/category/list/",
+            axum::routing::on(axum::routing::MethodFilter::GET, crate::api::category::list),
         )
         .with_state(Ctx {
             db,
