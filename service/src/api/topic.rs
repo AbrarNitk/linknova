@@ -11,7 +11,7 @@ pub async fn create(
     axum::extract::State(ctx): axum::extract::State<Ctx>,
     axum::Json(request): axum::Json<CreateRequest>,
 ) -> axum::response::Response {
-    match _create(&ctx.db, request).await {
+    match _create(&ctx.db, TopicCreate::from_req(request)).await {
         Ok(r) => super::success(axum::http::StatusCode::CREATED, r),
         Err(e) => {
             eprintln!("err: {:?}", e);
@@ -23,7 +23,20 @@ pub async fn create(
     }
 }
 
-pub async fn _create(pool: &sqlx::PgPool, req: CreateRequest) -> Result<i64, CreateError> {
+pub async fn _create(pool: &sqlx::PgPool, req: TopicCreate) -> Result<i64, CreateError> {
+    let topic_id = upsert_topic(pool, &req).await?;
+    if !req.categories.is_empty() {
+        let cats = req
+            .categories
+            .iter()
+            .map(|name| super::category::Category::new(name))
+            .collect::<Vec<_>>();
+        super::category::upsert_categories(pool, &cats).await?;
+    }
+    Ok(topic_id)
+}
+
+pub async fn upsert_topic(pool: &sqlx::PgPool, req: &TopicCreate) -> Result<i64, CreateError> {
     let query = r#"
         INSERT INTO linknova_topic(name, description, is_active, created_on, updated_on)
         VALUES($1, $2, $3, $4, $5)
@@ -44,17 +57,31 @@ pub async fn _create(pool: &sqlx::PgPool, req: CreateRequest) -> Result<i64, Cre
         .bind(now)
         .fetch_one(pool)
         .await?;
+    Ok(topic_id)
+}
 
-    if !req.categories.is_empty() {
-        let cats = req
-            .categories
-            .iter()
-            .map(|name| super::category::Category::new(name, topic_id))
-            .collect::<Vec<_>>();
-        super::category::upsert_categories(pool, &cats).await?;
+pub struct TopicCreate {
+    pub name: String,
+    pub description: Option<String>,
+    pub categories: Vec<String>,
+}
+
+impl TopicCreate {
+    pub fn new(name: &str) -> Self {
+        Self {
+            name: name.to_owned(),
+            description: None,
+            categories: vec![],
+        }
     }
 
-    Ok(topic_id)
+    pub fn from_req(req: CreateRequest) -> Self {
+        Self {
+            name: req.name,
+            description: req.description,
+            categories: req.categories,
+        }
+    }
 }
 
 #[derive(thiserror::Error, std::fmt::Debug)]

@@ -28,7 +28,6 @@ class Category(DateTimeBase):
     name = models.CharField(max_length=255, db_index=True, unique=True)
     title = models.CharField(max_length=255, null=True, blank=True)
     about = models.TextField(null=True, blank=True)
-    topic = models.ForeignKey(Topic, on_delete=models.CASCADE)
 
     # user = models.CharField(max_length=255)
     # is_active = models.BooleanField(default=True)
@@ -38,6 +37,16 @@ class Category(DateTimeBase):
     # If public so any logged in used can add the content to it.
     class Meta:
         db_table = "linknova_category"
+
+
+# a topic can have multiple categories
+# a category can be present in the mulitple topics
+class TopicCategoryMapping(models.Model):
+    topic = models.ForeignKey(Topic, on_delete=models.CASCADE)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE)
+
+    class Meta:
+        db_table = "linknova_topic_category_map"
 
 
 class Bookmark(DateTimeBase):

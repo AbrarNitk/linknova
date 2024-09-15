@@ -43,13 +43,12 @@ async fn save_url_(ctx: &Ctx, request: &SaveRequest) -> Result<SaveResponse, Sav
     let bookmark_id = insert_into_urls(&ctx.db, request).await?;
     // todo: handle topic handling properly, there can be multiple topics and categories come in the request
     // get the default topic for now
-    let topic_id = get_topic_or_default(&ctx.db, "default").await?;
     let categories = if !request.categories.is_empty() {
         // create the categories with the topic in mind
         let cats = request
             .categories
             .iter()
-            .map(|name| super::category::Category::new(name, topic_id))
+            .map(|name| super::category::Category::new(name))
             .collect::<Vec<_>>();
         let cats = super::category::upsert_categories(&ctx.db, &cats).await?;
         cats.into_iter()
