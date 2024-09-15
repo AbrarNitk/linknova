@@ -1,5 +1,5 @@
-export PYTHONPATH=${PYTHONPATH}:${PROJDIR}/dj
-export DIESEL_CONFIG_FILE=${PROJDIR}/diesel.toml
+# export PYTHONPATH=${PYTHONPATH}:${PROJDIR}/dj
+# export DIESEL_CONFIG_FILE=${PROJDIR}/diesel.toml
 
 DATABASE_NAME=linknova
 ROLE_NAME=root
@@ -19,7 +19,7 @@ function popd2() {
 
 function manage() {
   pushd2 /dj
-  python3 manage.py $*
+  python manage.py $*
   r=$?
   popd2
   return ${r}

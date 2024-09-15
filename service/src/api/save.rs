@@ -61,7 +61,7 @@ async fn save_url_(ctx: &Ctx, request: &SaveRequest) -> Result<SaveResponse, Sav
 pub async fn insert_into_urls(url: &SaveRequest, pool: &PgPool) -> sqlx::Result<i64> {
     use sqlx::Row;
     let now = chrono::Utc::now();
-    let query = "INSERT INTO bookmark(title, url, is_active, created_on, updated_on) values($1, $2, $3, $4, $5) returning id";
+    let query = "INSERT INTO linknova_bookmark(title, url, is_active, created_on, updated_on) values($1, $2, $3, $4, $5) returning id";
     let row = sqlx::query(query)
         .bind(url.title.as_ref().unwrap_or(&"".to_string()))
         .bind(url.url.as_str())
@@ -78,7 +78,7 @@ pub async fn insert_into_bookmark_dir_map(
     pool: &sqlx::PgPool,
 ) -> sqlx::Result<()> {
     let query = r#"
-            INSERT into bookmark_directory_map(bookmark_id, directory_id)
+            INSERT into linknova_bookmark_directory_map(bookmark_id, directory_id)
             SELECT * from UNNEST($1, $2)
             RETURNING id
     "#;
@@ -94,7 +94,7 @@ pub async fn categories(
     pool: &sqlx::PgPool,
 ) -> sqlx::Result<std::collections::HashMap<String, i64>> {
     use sqlx::Row;
-    let query = "SELECT id, name from directory";
+    let query = "SELECT id, name from linknova_directory";
     let rows: Vec<sqlx::Result<(String, i64)>> = sqlx::query(query)
         .fetch_all(pool)
         .await?
@@ -117,7 +117,7 @@ pub async fn _save_url(
         .map(|x| format!("${}", x))
         .collect::<Vec<_>>()
         .join(",");
-    let query_str = format!("select id, name from directory where name in ({})", params);
+    let query_str = format!("select id, name from linknova_directory where name in ({})", params);
     println!("{}", query_str);
     let mut query = sqlx::query(&query_str);
     for arg in request.categories.iter() {

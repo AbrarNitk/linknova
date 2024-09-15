@@ -19,7 +19,7 @@ class Topic(DateTimeBase):
     is_active = models.BooleanField(default=True)
 
     class Meta:
-        db_table = "topic"
+        db_table = "linknova_topic"
 
 
 class Directory(DateTimeBase):
@@ -35,7 +35,7 @@ class Directory(DateTimeBase):
     # TODO: Handle collaboration, for now keeping public and private concept
     # If public so any logged in used can add the content to it.
     class Meta:
-        db_table = "directory"
+        db_table = "linknova_directory"
 
 
 class Bookmark(DateTimeBase):
@@ -49,7 +49,7 @@ class Bookmark(DateTimeBase):
     # user = models.CharField(max_length=255)
     # tags = ArrayField(models.IntegerField())
     class Meta:
-        db_table = "bookmark"
+        db_table = "linknova_bookmark"
 
 
 class BookmarkDirectoryMapping(models.Model):
@@ -57,4 +57,4 @@ class BookmarkDirectoryMapping(models.Model):
     directory = models.ForeignKey(Directory, on_delete=models.CASCADE)
 
     class Meta:
-        db_table = "bookmark_directory_map"
+        db_table = "linknova_bookmark_directory_map"
