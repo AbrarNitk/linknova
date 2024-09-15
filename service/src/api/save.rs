@@ -5,7 +5,7 @@ use sqlx::PgPool;
 pub struct SaveRequest {
     pub title: Option<String>,
     pub url: String,
-    pub app: Option<String>,
+    pub reference: Option<String>,
     pub categories: Vec<String>,
     pub tags: Vec<String>,
 }
@@ -40,7 +40,7 @@ pub struct SaveResponse {
 }
 
 async fn save_url_(ctx: &Ctx, request: &SaveRequest) -> Result<SaveResponse, SaveError> {
-    let bookmark_id = insert_into_urls(request, &ctx.db).await?;
+    let bookmark_id = insert_into_urls(&ctx.db, request).await?;
     let mut v: Vec<(i64, i64)> = vec![];
     for cat in request.categories.iter() {
         match ctx.category_map.get(cat) {
@@ -54,54 +54,24 @@ async fn save_url_(ctx: &Ctx, request: &SaveRequest) -> Result<SaveResponse, Sav
             }
         }
     }
-    insert_into_bookmark_dir_map(v.as_slice(), &ctx.db).await?;
+    insert_into_bookmark_cat_map(v.as_slice(), &ctx.db).await?;
     Ok(SaveResponse { id: bookmark_id })
 }
 
-pub async fn insert_into_urls(url: &SaveRequest, pool: &PgPool) -> sqlx::Result<i64> {
+pub async fn insert_into_urls(pool: &PgPool, url: &SaveRequest) -> sqlx::Result<i64> {
     use sqlx::Row;
     let now = chrono::Utc::now();
-    let query = "INSERT INTO linknova_bookmark(title, url, is_active, created_on, updated_on) values($1, $2, $3, $4, $5) returning id";
+    let query = "INSERT INTO linknova_bookmark(title, url, reference, is_active, created_on, updated_on) values($1, $2, $3, $4, $5) returning id";
     let row = sqlx::query(query)
-        .bind(url.title.as_ref().unwrap_or(&"".to_string()))
-        .bind(url.url.as_str())
+        .bind(&url.title)
+        .bind(&url.url)
+        .bind(&url.reference)
         .bind(true)
         .bind(now)
         .bind(now)
         .fetch_one(pool)
         .await?;
     row.try_get::<i64, _>("id")
-}
-
-pub async fn insert_into_bookmark_dir_map(
-    map: &[(i64, i64)],
-    pool: &sqlx::PgPool,
-) -> sqlx::Result<()> {
-    let query = r#"
-            INSERT into linknova_bookmark_directory_map(bookmark_id, directory_id)
-            SELECT * from UNNEST($1, $2)
-            RETURNING id
-    "#;
-    sqlx::query(query)
-        .bind(map.iter().map(|x| x.0).collect::<Vec<_>>())
-        .bind(map.iter().map(|x| x.1).collect::<Vec<_>>())
-        .execute(pool)
-        .await?;
-    Ok(())
-}
-
-pub async fn categories(
-    pool: &sqlx::PgPool,
-) -> sqlx::Result<std::collections::HashMap<String, i64>> {
-    use sqlx::Row;
-    let query = "SELECT id, name from linknova_directory";
-    let rows: Vec<sqlx::Result<(String, i64)>> = sqlx::query(query)
-        .fetch_all(pool)
-        .await?
-        .into_iter()
-        .map(|r| -> sqlx::Result<(String, i64)> { Ok((r.try_get("name")?, r.try_get("id")?)) })
-        .collect();
-    rows.into_iter().collect()
 }
 
 pub async fn _save_url(
@@ -117,7 +87,10 @@ pub async fn _save_url(
         .map(|x| format!("${}", x))
         .collect::<Vec<_>>()
         .join(",");
-    let query_str = format!("select id, name from linknova_directory where name in ({})", params);
+    let query_str = format!(
+        "select id, name from linknova_directory where name in ({})",
+        params
+    );
     println!("{}", query_str);
     let mut query = sqlx::query(&query_str);
     for arg in request.categories.iter() {
@@ -139,6 +112,90 @@ pub async fn _save_url(
     }
 
     println!("{}", rows.len());
-
     "url-saved".to_string()
+}
+
+// note: we create a category with `default` name with the migrations
+pub async fn get_cat_or_default(pool: &sqlx::PgPool, name: &str) -> sqlx::Result<i64> {
+    let sql = "SELECT id, name from linknova_category where name = $1 or name = 'default'";
+    let rows: Vec<(i64, String)> = sqlx::query_as(sql).bind(name).fetch_all(pool).await?;
+    if let Some(r) = rows.iter().find(|f| f.1.eq(name)) {
+        return Ok(r.0);
+    }
+    if let Some(r) = rows.iter().find(|f| f.1.eq("default")) {
+        return Ok(r.0);
+    }
+    Err(sqlx::error::Error::RowNotFound)
+}
+
+pub async fn categories(
+    pool: &sqlx::PgPool,
+) -> sqlx::Result<std::collections::HashMap<String, i64>> {
+    use sqlx::Row;
+    let query = "SELECT id, name from linknova_category";
+    let rows: Vec<sqlx::Result<(String, i64)>> = sqlx::query(query)
+        .fetch_all(pool)
+        .await?
+        .into_iter()
+        .map(|r| -> sqlx::Result<(String, i64)> { Ok((r.try_get("name")?, r.try_get("id")?)) })
+        .collect();
+    rows.into_iter().collect()
+}
+
+#[derive(Debug)]
+pub struct Category {
+    pub name: String,
+    pub title: Option<String>,
+    pub about: Option<String>,
+    pub topic: i64,
+}
+
+pub async fn upsert_categories(
+    pool: &sqlx::PgPool,
+    categories: &[Category],
+) -> sqlx::Result<std::collections::HashMap<String, i64>> {
+    let sql = r#"
+        INSERT INTO linknova_category(name, title, about, topic_id, created_at, updated_at)
+        values($1, $2, $3, $4, $5)
+        ON CONFLICT (name)
+        DO UPDATE SET
+            title = EXCLUDED.title,
+            about = EXCLUDED.about,
+            updated_at = EXCLUDED.updated_at
+        RETURNING id, name
+    "#;
+
+    let now = chrono::Utc::now();
+    // todo: need improvements
+    let mut hm = std::collections::HashMap::new();
+    for cat in categories {
+        let (row_id, name) = sqlx::query_as::<_, (i64, String)>(sql)
+            .bind(&cat.name)
+            .bind(&cat.title)
+            .bind(&cat.about)
+            .bind(&cat.topic)
+            .bind(now)
+            .bind(now)
+            .fetch_one(pool)
+            .await?;
+        hm.insert(name, row_id);
+    }
+    Ok(hm)
+}
+
+pub async fn insert_into_bookmark_cat_map(
+    map: &[(i64, i64)],
+    pool: &sqlx::PgPool,
+) -> sqlx::Result<()> {
+    let query = r#"
+            INSERT into linknova_bookmark_category_map(bookmark_id, category_id)
+            SELECT * from UNNEST($1, $2)
+            RETURNING id
+    "#;
+    sqlx::query(query)
+        .bind(map.iter().map(|x| x.0).collect::<Vec<_>>())
+        .bind(map.iter().map(|x| x.1).collect::<Vec<_>>())
+        .execute(pool)
+        .await?;
+    Ok(())
 }

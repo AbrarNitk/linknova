@@ -23,7 +23,7 @@ class Topic(DateTimeBase):
         db_table = "linknova_topic"
 
 # Directory means categories
-class Directory(DateTimeBase):
+class Category(DateTimeBase):
     name = models.CharField(max_length=255, db_index=True, unique=True)
     title = models.CharField(max_length=255, null=True, blank=True)
     about = models.TextField(null=True, blank=True)
@@ -36,7 +36,7 @@ class Directory(DateTimeBase):
     # TODO: Handle collaboration, for now keeping public and private concept
     # If public so any logged in used can add the content to it.
     class Meta:
-        db_table = "linknova_directory"
+        db_table = "linknova_category"
 
 
 class Bookmark(DateTimeBase):
@@ -44,6 +44,7 @@ class Bookmark(DateTimeBase):
     url = models.CharField(max_length=4096)
     content = models.TextField(null=True, blank=True)
     is_active = models.BooleanField(default=True)
+    reference = models.CharField(max_length=1024, null=True, blank=True)
     # img_url = models.CharField(max_length=4096, null=True, blank=True)
     # modified = models.BooleanField(default=False)
     # archived = models.BooleanField(default=False)
@@ -54,10 +55,9 @@ class Bookmark(DateTimeBase):
 
 
 # a bookmark can belongs to multiple categories
-# a category can
 class BookmarkDirectoryMapping(models.Model):
     bookmark = models.ForeignKey(Bookmark, on_delete=models.CASCADE)
-    directory = models.ForeignKey(Directory, on_delete=models.CASCADE)
+    directory = models.ForeignKey(Category, on_delete=models.CASCADE)
 
     class Meta:
         db_table = "linknova_bookmark_directory_map"
