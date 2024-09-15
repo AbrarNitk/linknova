@@ -46,9 +46,15 @@ async fn save_url_(ctx: &Ctx, request: &SaveRequest) -> Result<SaveResponse, Sav
     let topic_id = get_topic_or_default(&ctx.db, "default").await?;
     let categories = if !request.categories.is_empty() {
         // create the categories with the topic in mind
-        let cats = request.categories.iter().map(|name|Category::new(name, topic_id)).collect::<Vec<_>>();
+        let cats = request
+            .categories
+            .iter()
+            .map(|name| Category::new(name, topic_id))
+            .collect::<Vec<_>>();
         let cats = upsert_categories(&ctx.db, &cats).await?;
-        cats.into_iter().map(|(_name, cat_id)| (bookmark_id, cat_id)).collect::<Vec<_>>()
+        cats.into_iter()
+            .map(|(_name, cat_id)| (bookmark_id, cat_id))
+            .collect::<Vec<_>>()
     } else {
         // get the default category for now
         let cat_id = get_cat_or_default(&ctx.db, "default").await?;
@@ -102,7 +108,11 @@ pub async fn _save_url(
 pub async fn insert_into_urls(pool: &PgPool, url: &SaveRequest) -> sqlx::Result<i64> {
     use sqlx::Row;
     let now = chrono::Utc::now();
-    let query = "INSERT INTO linknova_bookmark(title, url, reference, is_active, created_on, updated_on) values($1, $2, $3, $4, $5) returning id";
+    let query = r#"
+        INSERT INTO linknova_bookmark(title, url, reference, is_active, created_on, updated_on)
+        values($1, $2, $3, $4, $5, $6)
+        returning id
+    "#;
     let row = sqlx::query(query)
         .bind(&url.title)
         .bind(&url.url)
@@ -167,7 +177,7 @@ pub async fn upsert_categories(
 ) -> sqlx::Result<std::collections::HashMap<String, i64>> {
     let sql = r#"
         INSERT INTO linknova_category(name, title, about, topic_id, created_at, updated_at)
-        values($1, $2, $3, $4, $5)
+        values($1, $2, $3, $4, $5, $6)
         ON CONFLICT (name)
         DO UPDATE SET
             title = EXCLUDED.title,

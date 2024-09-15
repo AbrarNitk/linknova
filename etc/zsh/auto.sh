@@ -29,6 +29,13 @@ function makemigrations() {
   manage makemigrations $*
 }
 
+function empty_migration() {
+    makemigrations linknova --empty
+    # migrations.RunSQL("insert into linknova_topic(name, is_active, created_on, updated_on) values('default', true, now(), now())"),
+    # migrations.RunSQL("insert into linknova_category(name, topic_id, created_on, updated_on) values('default', (select id from linknova_topic where name = 'default'), now(), now())")
+
+}
+
 function migrate() {
   manage migrate $*
 }
