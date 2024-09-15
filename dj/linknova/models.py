@@ -55,9 +55,9 @@ class Bookmark(DateTimeBase):
 
 
 # a bookmark can belongs to multiple categories
-class BookmarkDirectoryMapping(models.Model):
+class BookmarkCategoryMapping(models.Model):
     bookmark = models.ForeignKey(Bookmark, on_delete=models.CASCADE)
-    directory = models.ForeignKey(Category, on_delete=models.CASCADE)
+    category_id = models.ForeignKey(Category, on_delete=models.CASCADE)
 
     class Meta:
-        db_table = "linknova_bookmark_directory_map"
+        db_table = "linknova_bookmark_category_map"

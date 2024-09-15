@@ -41,37 +41,21 @@ pub struct SaveResponse {
 
 async fn save_url_(ctx: &Ctx, request: &SaveRequest) -> Result<SaveResponse, SaveError> {
     let bookmark_id = insert_into_urls(&ctx.db, request).await?;
-    let mut v: Vec<(i64, i64)> = vec![];
-    for cat in request.categories.iter() {
-        match ctx.category_map.get(cat) {
-            Some(cat_id) => v.push((bookmark_id, *cat_id as i64)),
-            None => {
-                let default_cat = ctx
-                    .category_map
-                    .get("default")
-                    .ok_or_else(|| SaveError::DefaultCategoryNotFound)?;
-                v.push((bookmark_id, *default_cat as i64));
-            }
-        }
-    }
-    insert_into_bookmark_cat_map(v.as_slice(), &ctx.db).await?;
+    // todo: handle topic handling properly, there can be multiple topics and categories come in the request
+    // get the default topic for now
+    let topic_id = get_topic_or_default(&ctx.db, "default").await?;
+    let categories = if !request.categories.is_empty() {
+        // create the categories with the topic in mind
+        let cats = request.categories.iter().map(|name|Category::new(name, topic_id)).collect::<Vec<_>>();
+        let cats = upsert_categories(&ctx.db, &cats).await?;
+        cats.into_iter().map(|(_name, cat_id)| (bookmark_id, cat_id)).collect::<Vec<_>>()
+    } else {
+        // get the default category for now
+        let cat_id = get_cat_or_default(&ctx.db, "default").await?;
+        vec![(bookmark_id, cat_id)]
+    };
+    insert_into_bookmark_cat_map(categories.as_slice(), &ctx.db).await?;
     Ok(SaveResponse { id: bookmark_id })
-}
-
-pub async fn insert_into_urls(pool: &PgPool, url: &SaveRequest) -> sqlx::Result<i64> {
-    use sqlx::Row;
-    let now = chrono::Utc::now();
-    let query = "INSERT INTO linknova_bookmark(title, url, reference, is_active, created_on, updated_on) values($1, $2, $3, $4, $5) returning id";
-    let row = sqlx::query(query)
-        .bind(&url.title)
-        .bind(&url.url)
-        .bind(&url.reference)
-        .bind(true)
-        .bind(now)
-        .bind(now)
-        .fetch_one(pool)
-        .await?;
-    row.try_get::<i64, _>("id")
 }
 
 pub async fn _save_url(
@@ -115,6 +99,22 @@ pub async fn _save_url(
     "url-saved".to_string()
 }
 
+pub async fn insert_into_urls(pool: &PgPool, url: &SaveRequest) -> sqlx::Result<i64> {
+    use sqlx::Row;
+    let now = chrono::Utc::now();
+    let query = "INSERT INTO linknova_bookmark(title, url, reference, is_active, created_on, updated_on) values($1, $2, $3, $4, $5) returning id";
+    let row = sqlx::query(query)
+        .bind(&url.title)
+        .bind(&url.url)
+        .bind(&url.reference)
+        .bind(true)
+        .bind(now)
+        .bind(now)
+        .fetch_one(pool)
+        .await?;
+    row.try_get::<i64, _>("id")
+}
+
 // note: we create a category with `default` name with the migrations
 pub async fn get_cat_or_default(pool: &sqlx::PgPool, name: &str) -> sqlx::Result<i64> {
     let sql = "SELECT id, name from linknova_category where name = $1 or name = 'default'";
@@ -150,6 +150,17 @@ pub struct Category {
     pub topic: i64,
 }
 
+impl Category {
+    pub fn new(name: &str, topic_id: i64) -> Self {
+        Self {
+            name: name.to_owned(),
+            topic: topic_id,
+            title: None,
+            about: None,
+        }
+    }
+}
+
 pub async fn upsert_categories(
     pool: &sqlx::PgPool,
     categories: &[Category],
@@ -183,6 +194,7 @@ pub async fn upsert_categories(
     Ok(hm)
 }
 
+// map: (bookmark_id, category_id)
 pub async fn insert_into_bookmark_cat_map(
     map: &[(i64, i64)],
     pool: &sqlx::PgPool,
@@ -198,4 +210,17 @@ pub async fn insert_into_bookmark_cat_map(
         .execute(pool)
         .await?;
     Ok(())
+}
+
+// note: we create a topic with `default` name with the migrations
+pub async fn get_topic_or_default(pool: &sqlx::PgPool, name: &str) -> sqlx::Result<i64> {
+    let sql = "SELECT id, name from linknova_topic where name = $1 or name = 'default'";
+    let rows: Vec<(i64, String)> = sqlx::query_as(sql).bind(name).fetch_all(pool).await?;
+    if let Some(r) = rows.iter().find(|f| f.1.eq(name)) {
+        return Ok(r.0);
+    }
+    if let Some(r) = rows.iter().find(|f| f.1.eq("default")) {
+        return Ok(r.0);
+    }
+    Err(sqlx::error::Error::RowNotFound)
 }
