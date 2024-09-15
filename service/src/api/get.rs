@@ -61,15 +61,15 @@ pub async fn get_urls_(
     p_no: i64,
     size: i64,
 ) -> Result<ListUrlResponse, GetUrlsError> {
-    let mut query = "select DISTINCT ON (bookmark.id) bookmark.id, bookmark.title, bookmark.url from linknova_bookmark join linknova_bookmark_directory_map on bookmark.id=bookmark_directory_map.bookmark_id ".to_string();
+    let mut query = "select DISTINCT ON (linknova_bookmark.id) linknova_bookmark.id, linknova_bookmark.title, linknova_bookmark.url from linknova_bookmark join linknova_bookmark_category_map on linknova_bookmark.id=linknova_bookmark_category_map.bookmark_id ".to_string();
     if !categories.is_empty() {
         query.push_str(
-            " where linknova_bookmark_directory_map.directory_id = ANY($1) and is_active = true ",
+            " where linknova_bookmark_category_map.category_id = ANY($1) and is_active = true ",
         );
         query.push_str(" order by bookmark.id, created_on DESC OFFSET $2 LIMIT $3");
     } else {
         query.push_str(" where is_active = true ");
-        query.push_str(" order by bookmark.id, created_on DESC OFFSET $1 LIMIT $2");
+        query.push_str(" order by linknova_bookmark.id, created_on DESC OFFSET $1 LIMIT $2");
     }
 
     let mut db_query = sqlx::query(query.as_str());

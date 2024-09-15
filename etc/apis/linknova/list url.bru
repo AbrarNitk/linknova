@@ -1,0 +1,21 @@
+meta {
+  name: list url
+  type: http
+  seq: 3
+}
+
+get {
+  url: http://127.0.0.1:8000/linknova/v1/api/list/
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "title": "this is optional",
+    "url": "url to store",
+    "app": "app-name optional",
+    "categories": [],
+    "tags": []
+  }
+}
