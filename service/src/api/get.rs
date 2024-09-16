@@ -51,8 +51,6 @@ pub struct UrlRow {
     pub id: i64,
     pub title: Option<String>,
     pub url: String,
-    pub tags: Vec<String>,
-    pub categories: Vec<String>,
 }
 
 pub async fn get_urls_(
@@ -61,18 +59,34 @@ pub async fn get_urls_(
     p_no: i64,
     size: i64,
 ) -> Result<ListUrlResponse, GetUrlsError> {
-    let mut query = "select DISTINCT ON (linknova_bookmark.id) linknova_bookmark.id, linknova_bookmark.title, linknova_bookmark.url from linknova_bookmark join linknova_bookmark_category_map on linknova_bookmark.id=linknova_bookmark_category_map.bookmark_id ".to_string();
+    let mut query = r#"
+        SELECT
+            DISTINCT ON (linknova_bookmark.id) linknova_bookmark.id,
+            linknova_bookmark.title,
+            linknova_bookmark.url
+        FROM
+            linknova_bookmark
+        JOIN
+            linknova_bookmark_category_map ON linknova_bookmark.id = linknova_bookmark_category_map.bookmark_id "#.to_string();
     if !categories.is_empty() {
         query.push_str(
             " where linknova_bookmark_category_map.category_id = ANY($1) and is_active = true ",
         );
-        query.push_str(" order by bookmark.id, created_on DESC OFFSET $2 LIMIT $3");
+        query.push_str(" order by linknova_bookmark.id, created_on DESC OFFSET $2 LIMIT $3");
     } else {
         query.push_str(" where is_active = true ");
         query.push_str(" order by linknova_bookmark.id, created_on DESC OFFSET $1 LIMIT $2");
     }
 
     let mut db_query = sqlx::query(query.as_str());
+
+    // Note: here the question is how to get the categories of each url
+    // one brute force way is, if we get the categories by bookmark.id from db, it is gonna be time consuming
+    // another way is to select the category_id from mapping table also in the upper query but it only the category that we are passing
+    // but a url can have more category than we are passing
+    // better way is to generate the data according to the search engine when someone is inserting the data
+    // so let's wait for it now to select the tags/categories
+
     if !categories.is_empty() {
         db_query = db_query.bind(&categories[..]);
     }
@@ -93,8 +107,6 @@ pub async fn get_urls_(
             id: r.get(0),
             title: r.get(1),
             url: r.get(2),
-            tags: vec![],
-            categories: vec![],
         })
         .collect();
 

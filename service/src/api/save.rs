@@ -3,11 +3,10 @@ use sqlx::PgPool;
 
 #[derive(serde::Deserialize)]
 pub struct SaveRequest {
-    pub title: Option<String>,
     pub url: String,
+    pub title: Option<String>,
     pub reference: Option<String>,
     pub categories: Vec<String>,
-    pub tags: Vec<String>,
 }
 
 pub async fn save_url(
@@ -61,47 +60,6 @@ async fn save_url_(ctx: &Ctx, request: &SaveRequest) -> Result<SaveResponse, Sav
     };
     insert_into_bookmark_cat_map(categories.as_slice(), &ctx.db).await?;
     Ok(SaveResponse { id: bookmark_id })
-}
-
-pub async fn _save_url(
-    axum::extract::State(ctx): axum::extract::State<Ctx>,
-    axum::Json(request): axum::Json<SaveRequest>,
-) -> String {
-    use sqlx::Row;
-    // request: getting the url and categories
-    // get all the categories at runtime and hash-mapped them, with some default value also
-    // insert into url table and get the id
-    //
-    let params = (1..=request.categories.len())
-        .map(|x| format!("${}", x))
-        .collect::<Vec<_>>()
-        .join(",");
-    let query_str = format!(
-        "select id, name from linknova_directory where name in ({})",
-        params
-    );
-    println!("{}", query_str);
-    let mut query = sqlx::query(&query_str);
-    for arg in request.categories.iter() {
-        query = query.bind(arg);
-    }
-    use sqlx::Execute;
-    let sql = query.sql();
-    println!("{}", sql);
-    let rows: Vec<(i64, String)> = query
-        .fetch_all(&ctx.db)
-        .await
-        .unwrap()
-        .into_iter()
-        .map(|row| (row.get(0), row.get(1)))
-        .collect();
-
-    for (c1, c2) in &rows {
-        println!("{}:{}", c1, c2);
-    }
-
-    println!("{}", rows.len());
-    "url-saved".to_string()
 }
 
 pub async fn insert_into_urls(pool: &PgPool, url: &SaveRequest) -> sqlx::Result<i64> {

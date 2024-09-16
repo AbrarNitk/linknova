@@ -5,9 +5,13 @@ meta {
 }
 
 get {
-  url: http://127.0.0.1:8000/linknova/v1/api/list/
+  url: http://127.0.0.1:8000/linknova/v1/api/list/?cat=dsds
   body: json
   auth: none
+}
+
+query {
+  cat: dsds
 }
 
 body:json {

@@ -55,7 +55,6 @@ pub async fn get(
     }
 }
 
-
 pub async fn get_with_name(
     axum::extract::State(ctx): axum::extract::State<Ctx>,
     Path(topic_name): Path<String>,
@@ -71,7 +70,6 @@ pub async fn get_with_name(
         }
     }
 }
-
 
 pub async fn _create(pool: &sqlx::PgPool, req: TopicCreate) -> Result<i64, CreateError> {
     let topic_id = upsert_topic(pool, &req).await?;
@@ -151,7 +149,7 @@ pub struct TopicRow {
     pub topic_name: String,
     pub topic_description: Option<String>,
     pub topic_is_active: bool,
-    pub categories: serde_json::Value
+    pub categories: serde_json::Value,
 }
 
 pub async fn get_by_id(pool: &sqlx::PgPool, id: i64) -> Result<Vec<TopicRow>, sqlx::Error> {
@@ -219,7 +217,6 @@ pub async fn get_by_name(pool: &sqlx::PgPool, name: &str) -> Result<Vec<TopicRow
     let topic_categories: Vec<TopicRow> = sqlx::query_as(query).bind(name).fetch_all(pool).await?;
     Ok(topic_categories)
 }
-
 
 pub struct TopicCreate {
     pub name: String,
