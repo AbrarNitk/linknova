@@ -1,4 +1,5 @@
 use crate::router::Ctx;
+use axum::extract::path::Path;
 
 #[derive(serde::Deserialize)]
 pub struct CreateRequest {
@@ -38,6 +39,23 @@ pub async fn list(
     }
 }
 
+pub async fn get(
+    axum::extract::State(ctx): axum::extract::State<Ctx>,
+    Path(topic_id): Path<i64>,
+) -> axum::response::Response {
+    match get_by_id(&ctx.db, topic_id).await {
+        Ok(r) => super::success(axum::http::StatusCode::CREATED, r),
+        Err(e) => {
+            eprintln!("err: {:?}", e);
+            super::error(
+                axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+                "some-error-occurred",
+            )
+        }
+    }
+}
+
+
 pub async fn _create(pool: &sqlx::PgPool, req: TopicCreate) -> Result<i64, CreateError> {
     let topic_id = upsert_topic(pool, &req).await?;
     if !req.categories.is_empty() {
@@ -46,7 +64,12 @@ pub async fn _create(pool: &sqlx::PgPool, req: TopicCreate) -> Result<i64, Creat
             .iter()
             .map(|name| super::category::Category::new(name))
             .collect::<Vec<_>>();
-        super::category::upsert_categories(pool, &cats).await?;
+        let cats = super::category::upsert_categories(pool, &cats).await?;
+        let topic_cat_ids_map = cats
+            .into_iter()
+            .map(|(_name, id)| (topic_id, id))
+            .collect::<Vec<_>>();
+        topic_cat_map(pool, &topic_cat_ids_map).await?;
     }
     Ok(topic_id)
 }
@@ -63,6 +86,22 @@ pub async fn _list(
         .map(|r| -> sqlx::Result<(String, i64)> { Ok((r.try_get("name")?, r.try_get("id")?)) })
         .collect();
     rows.into_iter().collect()
+}
+
+// map: (topic_id, category_id)
+pub async fn topic_cat_map(pool: &sqlx::PgPool, map: &[(i64, i64)]) -> sqlx::Result<()> {
+    let query = r#"
+            INSERT into linknova_topic_category_map(topic_id, category_id)
+            SELECT * from UNNEST($1, $2)
+            ON CONFLICT (topic_id, category_id) DO NOTHING
+            RETURNING id
+    "#;
+    sqlx::query(query)
+        .bind(map.iter().map(|x| x.0).collect::<Vec<_>>())
+        .bind(map.iter().map(|x| x.1).collect::<Vec<_>>())
+        .execute(pool)
+        .await?;
+    Ok(())
 }
 
 pub async fn upsert_topic(pool: &sqlx::PgPool, req: &TopicCreate) -> Result<i64, CreateError> {
@@ -87,6 +126,48 @@ pub async fn upsert_topic(pool: &sqlx::PgPool, req: &TopicCreate) -> Result<i64,
         .fetch_one(pool)
         .await?;
     Ok(topic_id)
+}
+
+#[derive(sqlx::FromRow, serde::Serialize, Debug)]
+pub struct TopicRow {
+    pub topic_id: i64,
+    pub topic_name: String,
+    pub topic_description: Option<String>,
+    pub topic_is_active: bool,
+    pub categories: serde_json::Value
+}
+
+pub async fn get_by_id(pool: &sqlx::PgPool, id: i64) -> Result<Vec<TopicRow>, sqlx::Error> {
+    let query = r#"
+        SELECT
+            topic.id as topic_id,
+            topic.name as topic_name,
+            topic.description as topic_description,
+            topic.is_active as topic_is_active,
+            COALESCE(
+                jsonb_agg(
+                    jsonb_build_object(
+                        'category_id', category.id,
+                        'category_name', category.name,
+                        'category_title', category.title,
+                        'category_about', category.about
+                    )
+                ) FILTER (WHERE category.id IS NOT NULL), '[]'::jsonb
+            ) AS categories
+        FROM
+            linknova_topic as topic
+        LEFT JOIN
+            linknova_topic_category_map ON topic.id = linknova_topic_category_map.topic_id
+        LEFT JOIN
+            linknova_category as category ON category.id = linknova_topic_category_map.category_id
+        WHERE
+            topic.id = $1
+        GROUP BY
+            topic.id, topic.name, topic.description, topic.is_active;
+        "#;
+
+    let topic_categories: Vec<TopicRow> = sqlx::query_as(query).bind(id).fetch_all(pool).await?;
+    Ok(topic_categories)
 }
 
 pub struct TopicCreate {
