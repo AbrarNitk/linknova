@@ -169,3 +169,19 @@ pub async fn cat_topic_map(pool: &sqlx::PgPool, map: &[(i64, i64)]) -> sqlx::Res
         .await?;
     Ok(())
 }
+
+pub async fn refresh_categories(ctx: Ctx) -> () {
+    tracing::info!("refresing the categories");
+    loop {
+        match categories(&ctx.db).await {
+            Ok(categories) => {
+                let mut cats = ctx.category_map.write().unwrap();
+                *cats = categories;
+            }
+            Err(err) => {
+                eprintln!("refresh-category::error: {:?}", err);
+            }
+        }
+        tokio::time::sleep(std::time::Duration::from_secs(3)).await;
+    }
+}

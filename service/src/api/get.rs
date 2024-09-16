@@ -12,13 +12,17 @@ pub async fn get_urls(
     axum::extract::State(ctx): axum::extract::State<Ctx>,
     axum::extract::Query(query): axum::extract::Query<GetUrlQuery>,
 ) -> axum::response::Response {
-    // get all the category ids from rh cache
-    let cats = query
-        .cat
-        .unwrap_or("".to_string())
-        .split(',')
-        .flat_map(|c| ctx.category_map.get(c).map(|x| *x))
-        .collect::<Vec<i64>>();
+    // get all the category ids from rw cache
+    let cats = {
+        let category_map = ctx.category_map.read().unwrap();
+        let cats = query
+            .cat
+            .unwrap_or("".to_string())
+            .split(',')
+            .flat_map(|c| category_map.get(c).map(|x| *x))
+            .collect::<Vec<i64>>();
+        cats
+    };
     let p_no = query.p_no.unwrap_or(1); // todo: handle the negative case also
     let size = query.size.unwrap_or(10);
     match get_urls_(&ctx, cats, p_no, size).await {

@@ -50,7 +50,6 @@ pub async fn http_main() {
     let categories = api::category::categories(&pool)
         .await
         .expect("not able to the categories");
-    println!("categories: {:?}", categories);
 
     let socket_address: std::net::SocketAddr =
         (std::net::Ipv4Addr::UNSPECIFIED, read_env_with_parse("PORT")).into();
@@ -63,7 +62,19 @@ pub async fn http_main() {
         .await
         .expect("cannot bind the address");
 
-    let app = router::routes(pool, categories).await;
+    let ctx = router::Ctx {
+        db: pool,
+        category_map: std::sync::Arc::new(std::sync::RwLock::new(categories)),
+    };
+
+    let cloned_ctx = ctx.clone();
+    tokio::task::spawn(async move {
+        api::category::refresh_categories(cloned_ctx).await;
+    });
+
+    // println!("categories: {:?}", categories);
+
+    let app = router::routes(ctx).await;
     let hn = hn::router::router().await;
     let app_router = app.merge(hn);
 
