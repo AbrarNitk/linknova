@@ -37,6 +37,10 @@ pub async fn routes(
             axum::routing::on(axum::routing::MethodFilter::GET, crate::api::topic::get),
         )
         .route(
+            "/linknova/v1/api/topic/get-by-name/:name",
+            axum::routing::on(axum::routing::MethodFilter::GET, crate::api::topic::get_with_name),
+        )
+        .route(
             "/linknova/v1/api/topic/list/",
             axum::routing::on(axum::routing::MethodFilter::GET, crate::api::topic::list),
         )
