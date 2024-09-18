@@ -1,5 +1,4 @@
 from django.db import models
-from django.contrib.postgres.fields import ArrayField
 
 
 # Create your models here.
@@ -56,6 +55,7 @@ class Bookmark(DateTimeBase):
     content = models.TextField(null=True, blank=True)
     is_active = models.BooleanField(default=True)
     reference = models.CharField(max_length=1024, null=True, blank=True)
+    categories = models.JSONField(default=dict)
 
     # img_url = models.CharField(max_length=4096, null=True, blank=True)
     # modified = models.BooleanField(default=False)

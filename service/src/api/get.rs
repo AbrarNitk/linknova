@@ -4,8 +4,16 @@ use sqlx::Row;
 #[derive(serde::Deserialize, Debug)]
 pub struct GetUrlQuery {
     cat: Option<String>,
-    p_no: Option<i64>,
-    size: Option<i64>,
+    p_no: Option<i32>,
+    size: Option<i32>,
+}
+
+pub fn min(a: i32, b: i32) -> i32 {
+    if a <= b {
+        a
+    } else {
+        b
+    }
 }
 
 pub async fn get_urls(
@@ -25,7 +33,7 @@ pub async fn get_urls(
     };
     let p_no = query.p_no.unwrap_or(1); // todo: handle the negative case also
     let size = query.size.unwrap_or(10);
-    match get_urls_(&ctx, cats, p_no, size).await {
+    match get_urls_(&ctx, cats, p_no, min(size, 100)).await {
         Ok(r) => super::success(axum::http::StatusCode::OK, r),
         Err(e) => {
             println!("{:?}", e);
@@ -45,8 +53,9 @@ pub enum GetUrlsError {
 
 #[derive(serde::Serialize)]
 pub struct ListUrlResponse {
-    prev: Option<i64>,
-    next: Option<i64>,
+    prev: Option<i32>,
+    next: Option<i32>,
+    count: usize,
     rows: Vec<UrlRow>,
 }
 
@@ -55,19 +64,21 @@ pub struct UrlRow {
     pub id: i64,
     pub title: Option<String>,
     pub url: String,
+    pub categories: serde_json::Value,
 }
 
 pub async fn get_urls_(
     ctx: &Ctx,
     categories: Vec<i64>,
-    p_no: i64,
-    size: i64,
+    p_no: i32,
+    size: i32,
 ) -> Result<ListUrlResponse, GetUrlsError> {
     let mut query = r#"
         SELECT
             DISTINCT ON (linknova_bookmark.id) linknova_bookmark.id,
             linknova_bookmark.title,
-            linknova_bookmark.url
+            linknova_bookmark.url,
+            linknova_bookmark.categories
         FROM
             linknova_bookmark
         JOIN
@@ -90,16 +101,13 @@ pub async fn get_urls_(
     // but a url can have more category than we are passing
     // better way is to generate the data according to the search engine when someone is inserting the data
     // so let's wait for it now to select the tags/categories
+    // for now we are keeping the local cache which is getting refreshed at every 5 second
 
     if !categories.is_empty() {
         db_query = db_query.bind(&categories[..]);
     }
 
-    let offset: i64 = if p_no <= 1 {
-        0
-    } else {
-        ((p_no - 1) * size) - 1
-    };
+    let offset: i32 = if p_no <= 1 { 0 } else { (p_no - 1) * size };
 
     let rows: Vec<UrlRow> = db_query
         .bind(offset)
@@ -111,6 +119,7 @@ pub async fn get_urls_(
             id: r.get(0),
             title: r.get(1),
             url: r.get(2),
+            categories: r.get(3),
         })
         .collect();
 
@@ -124,9 +133,11 @@ pub async fn get_urls_(
         prev = Some(p_no - 1);
     }
 
+    let rows: Vec<_> = rows.into_iter().take(size as usize).collect();
     Ok(ListUrlResponse {
         prev,
         next,
-        rows: rows.into_iter().take(size as usize).collect(),
+        count: rows.len(),
+        rows,
     })
 }

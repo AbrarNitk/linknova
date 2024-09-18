@@ -5,13 +5,15 @@ meta {
 }
 
 get {
-  url: http://127.0.0.1:8000/linknova/v1/api/list/?cat=dsds,memory-management
+  url: http://127.0.0.1:8000/linknova/v1/api/list/?cat=dsds,memory-management&p_no=4&size=12
   body: json
   auth: none
 }
 
 query {
   cat: dsds,memory-management
+  p_no: 4
+  size: 12
 }
 
 body:json {

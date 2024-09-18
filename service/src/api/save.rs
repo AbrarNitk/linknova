@@ -66,14 +66,16 @@ pub async fn insert_into_urls(pool: &PgPool, url: &SaveRequest) -> sqlx::Result<
     use sqlx::Row;
     let now = chrono::Utc::now();
     let query = r#"
-        INSERT INTO linknova_bookmark(title, url, reference, is_active, created_on, updated_on)
-        values($1, $2, $3, $4, $5, $6)
+        INSERT INTO linknova_bookmark(title, url, reference, categories, is_active, created_on, updated_on)
+        values($1, $2, $3, $4, $5, $6, $7)
         returning id
     "#;
+
     let row = sqlx::query(query)
         .bind(&url.title)
         .bind(&url.url)
         .bind(&url.reference)
+        .bind(serde_json::to_value(&url.categories).unwrap())
         .bind(true)
         .bind(now)
         .bind(now)
