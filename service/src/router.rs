@@ -20,7 +20,7 @@ pub async fn routes(ctx: Ctx) -> axum::Router {
         )
         .route(
             "/linknova/v1/api/save/",
-            axum::routing::on(axum::routing::MethodFilter::PUT, crate::api::save_url),
+            axum::routing::on(axum::routing::MethodFilter::POST, crate::api::save_url),
         )
         .route(
             "/linknova/v1/api/list/",

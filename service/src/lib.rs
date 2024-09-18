@@ -76,9 +76,16 @@ pub async fn http_main() {
 
     let app = router::routes(ctx).await;
     let hn = hn::router::router().await;
-    let app_router = app.merge(hn);
+    let app_router = app.merge(hn).merge(serve_static());
 
     axum::serve(listener, app_router.into_make_service())
         .await
         .unwrap()
+}
+
+pub fn serve_static() -> axum::Router {
+    axum::Router::new().nest_service(
+        "/linknova/static/",
+        tower_http::services::ServeDir::new("ui/"),
+    )
 }

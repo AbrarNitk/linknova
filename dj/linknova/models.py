@@ -50,7 +50,7 @@ class TopicCategoryMapping(models.Model):
 
 
 class Bookmark(DateTimeBase):
-    title = models.CharField(max_length=1024, blank=True)
+    title = models.CharField(max_length=1024, blank=True, null=True)
     url = models.CharField(max_length=4096)
     content = models.TextField(null=True, blank=True)
     is_active = models.BooleanField(default=True)
