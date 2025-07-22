@@ -4,13 +4,15 @@ pub mod errors;
 pub mod hn;
 pub mod router;
 pub mod routes;
+pub mod settings;
 pub mod utils;
+
 use ctx::Ctx;
 
 pub use controller::{error, success};
 
 fn env() -> String {
-    match std::env::var("ENV") {
+    match std::env::var("PROFILE_NAME") {
         Ok(env) => env.to_lowercase(),
         Err(_) => "local".to_string(),
     }
@@ -30,7 +32,6 @@ fn read_env(v: &str) -> String {
 pub async fn http_main() {
     // Setting the environment variables
     use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
-
     tracing_subscriber::registry()
         .with(
             tracing_subscriber::EnvFilter::try_from_default_env()

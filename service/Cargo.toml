@@ -26,3 +26,4 @@ tracing = { workspace = true }
 tracing-subscriber = { workspace = true }
 tracing-forest = { workspace = true }
 chrono = { version = "0.4.31", features = ["serde"] }
+config = "0.15"
