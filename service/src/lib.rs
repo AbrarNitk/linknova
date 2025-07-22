@@ -1,10 +1,10 @@
-pub mod api;
+pub mod controller;
 pub mod errors;
 pub mod hn;
 pub mod router;
 pub mod utils;
 
-pub use api::{error, success};
+pub use controller::{error, success};
 
 fn env() -> String {
     match std::env::var("ENV") {
@@ -46,7 +46,7 @@ pub async fn http_main() {
         .await
         .expect("could not connect to the database");
 
-    let categories = api::category::categories(&pool)
+    let categories = controller::category::categories(&pool)
         .await
         .expect("not able to the categories");
 
@@ -68,7 +68,7 @@ pub async fn http_main() {
 
     let cloned_ctx = ctx.clone();
     tokio::task::spawn(async move {
-        api::category::refresh_categories(cloned_ctx).await;
+        controller::category::refresh_categories(cloned_ctx).await;
     });
 
     // println!("categories: {:?}", categories);

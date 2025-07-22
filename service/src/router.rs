@@ -20,41 +20,59 @@ pub async fn routes(ctx: Ctx) -> axum::Router {
         )
         .route(
             "/linknova/v1/api/save/",
-            axum::routing::on(axum::routing::MethodFilter::POST, crate::api::save_url),
+            axum::routing::on(
+                axum::routing::MethodFilter::POST,
+                crate::controller::save_url,
+            ),
         )
         .route(
             "/linknova/v1/api/list/",
-            axum::routing::on(axum::routing::MethodFilter::GET, crate::api::get_urls),
+            axum::routing::on(
+                axum::routing::MethodFilter::GET,
+                crate::controller::get_urls,
+            ),
         )
         .route(
             "/linknova/v1/api/topic/create/",
-            axum::routing::on(axum::routing::MethodFilter::PUT, crate::api::topic::create),
+            axum::routing::on(
+                axum::routing::MethodFilter::PUT,
+                crate::controller::topic::create,
+            ),
         )
         .route(
             "/linknova/v1/api/topic/get/:id",
-            axum::routing::on(axum::routing::MethodFilter::GET, crate::api::topic::get),
+            axum::routing::on(
+                axum::routing::MethodFilter::GET,
+                crate::controller::topic::get,
+            ),
         )
         .route(
             "/linknova/v1/api/topic/get-by-name/:name",
             axum::routing::on(
                 axum::routing::MethodFilter::GET,
-                crate::api::topic::get_with_name,
+                crate::controller::topic::get_with_name,
             ),
         )
         .route(
             "/linknova/v1/api/topic/list/",
-            axum::routing::on(axum::routing::MethodFilter::GET, crate::api::topic::list),
+            axum::routing::on(
+                axum::routing::MethodFilter::GET,
+                crate::controller::topic::list,
+            ),
         )
         .route(
             "/linknova/v1/api/category/create/",
             axum::routing::on(
                 axum::routing::MethodFilter::PUT,
-                crate::api::category::create,
+                crate::controller::category::create,
             ),
         )
         .route(
             "/linknova/v1/api/category/list/",
-            axum::routing::on(axum::routing::MethodFilter::GET, crate::api::category::list),
+            axum::routing::on(
+                axum::routing::MethodFilter::GET,
+                crate::controller::category::list,
+            ),
         )
         .with_state(ctx);
     router
