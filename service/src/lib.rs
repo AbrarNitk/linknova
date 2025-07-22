@@ -1,5 +1,4 @@
 pub mod api;
-pub mod controller;
 pub mod errors;
 pub mod hn;
 pub mod router;
