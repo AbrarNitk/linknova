@@ -30,14 +30,14 @@ pub async fn routes(ctx: crate::Ctx) -> axum::Router {
             ),
         )
         .route(
-            "/linknova/v1/api/topic/get/:id",
+            "/linknova/v1/api/topic/get/{id}",
             axum::routing::on(
                 axum::routing::MethodFilter::GET,
                 crate::controller::topic::get,
             ),
         )
         .route(
-            "/linknova/v1/api/topic/get-by-name/:name",
+            "/linknova/v1/api/topic/get-by-name/{name}",
             axum::routing::on(
                 axum::routing::MethodFilter::GET,
                 crate::controller::topic::get_with_name,

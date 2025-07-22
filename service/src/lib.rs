@@ -8,6 +8,7 @@ pub mod settings;
 pub mod utils;
 
 use ctx::Ctx;
+use std::env::current_dir;
 
 pub use controller::{error, success};
 
@@ -43,6 +44,15 @@ pub async fn http_main() {
     let env_path = format!("{}.env", env());
     println!("Environment file path: {}", env_path);
     dotenv::from_path(env_path.as_str()).ok();
+
+    let path = current_dir().unwrap();
+    let settings = crate::settings::Settings::new_with_file(
+        path.join("etc/settings").as_path(),
+        env().as_str(),
+    )
+    .unwrap();
+
+    println!("settings: {:?}", settings);
 
     let pool = sqlx::postgres::PgPoolOptions::new()
         .max_connections(5)
