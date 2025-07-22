@@ -1,4 +1,4 @@
-use crate::router::Ctx;
+use crate::Ctx;
 use axum::extract::path::Path;
 
 #[derive(serde::Deserialize)]

@@ -1,18 +1,8 @@
-type CategoryName = String;
-type CategoryID = i64;
-
-#[derive(Clone)]
-pub struct Ctx {
-    pub db: sqlx::PgPool,
-    pub category_map:
-        std::sync::Arc<std::sync::RwLock<std::collections::HashMap<CategoryName, CategoryID>>>,
-}
-
 pub async fn health() -> impl axum::response::IntoResponse {
     "linknove is running"
 }
 
-pub async fn routes(ctx: Ctx) -> axum::Router {
+pub async fn routes(ctx: crate::Ctx) -> axum::Router {
     let router = axum::Router::new()
         .route(
             "/linknova/v1/api/health/",

@@ -1,4 +1,4 @@
-use crate::router::Ctx;
+use crate::Ctx;
 use sqlx::PgPool;
 
 #[derive(serde::Deserialize)]

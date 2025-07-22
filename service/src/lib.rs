@@ -1,8 +1,11 @@
 pub mod controller;
+pub mod ctx;
 pub mod errors;
 pub mod hn;
 pub mod router;
+pub mod routes;
 pub mod utils;
+use ctx::Ctx;
 
 pub use controller::{error, success};
 
@@ -61,7 +64,7 @@ pub async fn http_main() {
         .await
         .expect("cannot bind the address");
 
-    let ctx = router::Ctx {
+    let ctx = Ctx {
         db: pool,
         category_map: std::sync::Arc::new(std::sync::RwLock::new(categories)),
     };
