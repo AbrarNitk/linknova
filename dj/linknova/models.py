@@ -34,6 +34,7 @@ class Category(DateTimeBase):
     display_name = models.CharField(max_length=255, null=True, blank=True)
     description = models.CharField(max_length=1024, null=True, blank=True)
     about = models.TextField(null=True, blank=True)
+    priority = models.IntegerField(default=0)
     user = models.CharField(max_length=255)
     active = models.BooleanField(default=True)
     # If public so any logged-in user can see the labeled content.
