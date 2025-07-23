@@ -1,5 +1,6 @@
 pub mod category;
 pub mod get;
+pub mod link;
 pub mod response;
 pub mod save;
 pub mod topic;
