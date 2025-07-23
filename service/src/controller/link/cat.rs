@@ -5,10 +5,16 @@ use axum::response::Response;
 #[derive(serde::Deserialize)]
 pub struct CreateRequest {
     pub name: String,
+    pub display_name: Option<String>,
+    pub about: Option<String>,
     pub description: Option<String>,
-    pub categories: Vec<String>,
+    pub topics: Vec<String>,
+    #[serde(default)]
+    pub public: bool,
+    pub user: String,
 }
 
+#[tracing::instrument(name = "controller::cat::create", skip_all)]
 pub async fn create(
     State(ctx): State<Ctx>,
     axum::Json(request): axum::Json<CreateRequest>,
