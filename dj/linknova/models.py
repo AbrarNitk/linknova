@@ -15,7 +15,7 @@ class DateTimeBase(models.Model):
 # Topics are the categorization of the categories
 class Topic(DateTimeBase):
     name = models.CharField(max_length=255, db_index=True)
-    display_name = models.CharField(max_length=512)
+    display_name = models.CharField(max_length=512, null=True, blank=True)
     description = models.CharField(max_length=1024, null=True, blank=True)
     about = models.TextField(null=True, blank=True)
     priority = models.IntegerField(default=0)
@@ -31,7 +31,7 @@ class Topic(DateTimeBase):
 # Directory means categories/label/tags
 class Category(DateTimeBase):
     name = models.CharField(max_length=255, db_index=True)
-    display_name = models.CharField(max_length=255)
+    display_name = models.CharField(max_length=255, null=True, blank=True)
     description = models.CharField(max_length=1024, null=True, blank=True)
     about = models.TextField(null=True, blank=True)
     user = models.CharField(max_length=255)

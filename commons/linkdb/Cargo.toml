@@ -4,5 +4,5 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-sqlx = {workspace = true}
+sqlx = {workspace = true, features = ["chrono"]}
 tracing = {workspace = true}
