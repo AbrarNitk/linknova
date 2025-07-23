@@ -19,7 +19,11 @@ pub async fn list(ctx: &Ctx) -> Result<(), types::TopicError> {
 }
 
 #[tracing::instrument(name = "service::topic-update", skip_all)]
-pub async fn update(ctx: &Ctx, topic_name: &str) -> Result<(), types::TopicError> {
+pub async fn update(
+    ctx: &Ctx,
+    topic_name: &str,
+    update_req: link::topic::CreateRequest,
+) -> Result<(), types::TopicError> {
     Ok(())
 }
 
