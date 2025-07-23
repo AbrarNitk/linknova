@@ -18,7 +18,12 @@ pub async fn router<S>(ctx: crate::ctx::Ctx) -> axum::Router<S> {
         )
         .nest(
             "/-/link",
-            axum::Router::new().route("/cat", routing::get(foo)),
+            axum::Router::new()
+                .route("/cat", routing::post(link::topic::create))
+                .route("/cat/{cat-name}", routing::get(link::topic::get))
+                .route("/cat", routing::get(link::topic::list))
+                .route("/cat/{cat-name}", routing::put(link::topic::update))
+                .route("/cat/{cat-name}", routing::delete(link::topic::delete)),
         )
         .with_state(ctx)
 }
