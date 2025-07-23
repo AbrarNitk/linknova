@@ -2,7 +2,6 @@ pub mod controller;
 pub mod ctx;
 pub mod errors;
 pub mod hn;
-pub mod router;
 pub mod routes;
 pub mod settings;
 pub mod utils;

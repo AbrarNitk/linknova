@@ -1,5 +1,5 @@
+use service::controller;
 use service::ctx::Ctx;
-use service::{controller, hn, router, serve_static};
 use std::env::current_dir;
 
 fn main() {
@@ -85,11 +85,9 @@ pub async fn http_main() {
 
     // println!("categories: {:?}", categories);
 
-    let app = router::routes(ctx).await;
-    let hn = hn::router::router().await;
-    let app_router = app.merge(hn).merge(serve_static());
+    let app = service::routes::routes(ctx).await;
 
-    axum::serve(listener, app_router.into_make_service())
+    axum::serve(listener, app.into_make_service())
         .await
         .unwrap()
 }
