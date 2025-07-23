@@ -90,7 +90,6 @@ pub async fn delete(pool: &sqlx::PgPool, name: &str) -> Result<(), sqlx::Error> 
     let query = r#"
         DELETE FROM linknova_category WHERE name = $1 returning id
     "#;
-
     let (_id,): (i64,) = sqlx::query_as(query).bind(name).fetch_one(pool).await?;
     Ok(())
 }
