@@ -1,16 +1,12 @@
 use crate::ctx::Ctx;
-use axum::extract::{Path, State};
+use axum::extract::{Path, Query, State};
 use axum::response::Response;
 
 #[derive(serde::Deserialize)]
 pub struct CreateRequest {
     pub name: String,
     pub description: Option<String>,
-    pub display_name: Option<String>,
-    pub priority: Option<i32>,
-    #[serde(default)]
-    pub public: bool,
-    pub user: String,
+    pub categories: Vec<String>,
 }
 
 pub async fn create(
@@ -32,7 +28,7 @@ pub async fn create(
 
 pub async fn get(
     State(ctx): State<Ctx>,
-    Path(topic_name): Path<String>,
+    Path((cat_name, topic_name)): Path<(String, String)>,
 ) -> axum::response::Response {
     // match get_by_id(&ctx.db, topic_id).await {
     //     Ok(r) => super::success(axum::http::StatusCode::CREATED, r),
@@ -47,7 +43,7 @@ pub async fn get(
     todo!()
 }
 
-pub async fn list(State(ctx): State<Ctx>) -> axum::response::Response {
+pub async fn list(State(ctx): State<Ctx>, Query(topic): Query<String>) -> axum::response::Response {
     // match get_by_id(&ctx.db, topic_id).await {
     //     Ok(r) => super::success(axum::http::StatusCode::CREATED, r),
     //     Err(e) => {
@@ -63,7 +59,7 @@ pub async fn list(State(ctx): State<Ctx>) -> axum::response::Response {
 
 pub async fn update(
     State(ctx): State<Ctx>,
-    Path(topic_name): Path<String>,
+    Path(cat_name): Path<String>,
 ) -> axum::response::Response {
     // match get_by_id(&ctx.db, topic_id).await {
     //     Ok(r) => super::success(axum::http::StatusCode::CREATED, r),
@@ -80,7 +76,7 @@ pub async fn update(
 
 pub async fn delete(
     State(ctx): State<Ctx>,
-    Path(topic_name): Path<String>,
+    Path(query): Path<CatApiQuery>,
 ) -> axum::response::Response {
     // match get_by_id(&ctx.db, topic_id).await {
     //     Ok(r) => super::success(axum::http::StatusCode::CREATED, r),
@@ -93,4 +89,10 @@ pub async fn delete(
     //     }
     // }
     todo!()
+}
+
+#[derive(serde::Deserialize, Debug)]
+pub struct CatApiQuery {
+    #[serde(default)]
+    pub topic: Vec<String>,
 }
