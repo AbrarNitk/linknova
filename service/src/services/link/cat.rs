@@ -14,12 +14,16 @@ pub async fn get(ctx: &Ctx, cat_name: &str) -> Result<(), types::CatError> {
 }
 
 #[tracing::instrument(name = "service::cat-list", skip_all)]
-pub async fn list(ctx: &Ctx) -> Result<(), types::CatError> {
+pub async fn list(ctx: &Ctx, topics: &[String]) -> Result<(), types::CatError> {
     Ok(())
 }
 
 #[tracing::instrument(name = "service::cat-update", skip_all)]
-pub async fn update(ctx: &Ctx, cat_name: &str) -> Result<(), types::CatError> {
+pub async fn update(
+    ctx: &Ctx,
+    cat_name: &str,
+    req: link::cat::CreateRequest,
+) -> Result<(), types::CatError> {
     Ok(())
 }
 

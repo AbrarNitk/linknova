@@ -76,6 +76,7 @@ pub async fn http_main() {
     let ctx = Ctx {
         db: pool,
         category_map: std::sync::Arc::new(std::sync::RwLock::new(categories)),
+        static_user: settings.user.id,
     };
 
     // let cloned_ctx = ctx.clone();

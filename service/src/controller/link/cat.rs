@@ -1,4 +1,6 @@
+use crate::controller::response;
 use crate::ctx::Ctx;
+use crate::services::link;
 use axum::extract::{Path, Query, State};
 use axum::response::Response;
 
@@ -19,82 +21,89 @@ pub async fn create(
     State(ctx): State<Ctx>,
     axum::Json(request): axum::Json<CreateRequest>,
 ) -> Response {
-    // match _create(&ctx.db, TopicCreate::from_req(request)).await {
-    //     Ok(r) => super::success(axum::http::StatusCode::CREATED, r),
-    //     Err(e) => {
-    //         eprintln!("err: {:?}", e);
-    //         super::error(
-    //             axum::http::StatusCode::INTERNAL_SERVER_ERROR,
-    //             "some-error-occurred",
-    //         )
-    //     }
-    // }
-    todo!()
+    match link::cat::create(&ctx, request).await {
+        Ok(r) => response::success(axum::http::StatusCode::CREATED, r),
+        Err(e) => {
+            tracing::error!("err: {:?}", e);
+            response::error(axum::http::StatusCode::INTERNAL_SERVER_ERROR, e.to_string())
+        }
+    }
 }
 
-pub async fn get(
-    State(ctx): State<Ctx>,
-    Path((cat_name, topic_name)): Path<(String, String)>,
-) -> axum::response::Response {
-    // match get_by_id(&ctx.db, topic_id).await {
-    //     Ok(r) => super::success(axum::http::StatusCode::CREATED, r),
-    //     Err(e) => {
-    //         eprintln!("err: {:?}", e);
-    //         super::error(
-    //             axum::http::StatusCode::INTERNAL_SERVER_ERROR,
-    //             "some-error-occurred",
-    //         )
-    //     }
-    // }
-    todo!()
+#[tracing::instrument(name = "controller::cat::get", skip_all)]
+pub async fn get(State(ctx): State<Ctx>, Path(cat_name): Path<String>) -> Response {
+    match link::cat::get(&ctx, cat_name.as_str()).await {
+        Ok(r) => response::success(axum::http::StatusCode::OK, r),
+        Err(e) => {
+            tracing::error!("err: {:?}", e);
+            response::error(axum::http::StatusCode::INTERNAL_SERVER_ERROR, e.to_string())
+        }
+    }
 }
 
-pub async fn list(State(ctx): State<Ctx>, Query(topic): Query<String>) -> axum::response::Response {
-    // match get_by_id(&ctx.db, topic_id).await {
-    //     Ok(r) => super::success(axum::http::StatusCode::CREATED, r),
-    //     Err(e) => {
-    //         eprintln!("err: {:?}", e);
-    //         super::error(
-    //             axum::http::StatusCode::INTERNAL_SERVER_ERROR,
-    //             "some-error-occurred",
-    //         )
-    //     }
-    // }
-    todo!()
+#[tracing::instrument(name = "controller::cat::list", skip_all)]
+pub async fn list(State(ctx): State<Ctx>, Path(query): Path<CatApiQuery>) -> Response {
+    match link::cat::list(&ctx, query.topic.as_slice()).await {
+        Ok(r) => response::success(axum::http::StatusCode::OK, r),
+        Err(e) => {
+            tracing::error!("err: {:?}", e);
+            response::error(axum::http::StatusCode::INTERNAL_SERVER_ERROR, e.to_string())
+        }
+    }
 }
 
+#[tracing::instrument(name = "controller::cat::update", skip_all)]
 pub async fn update(
     State(ctx): State<Ctx>,
     Path(cat_name): Path<String>,
-) -> axum::response::Response {
-    // match get_by_id(&ctx.db, topic_id).await {
-    //     Ok(r) => super::success(axum::http::StatusCode::CREATED, r),
-    //     Err(e) => {
-    //         eprintln!("err: {:?}", e);
-    //         super::error(
-    //             axum::http::StatusCode::INTERNAL_SERVER_ERROR,
-    //             "some-error-occurred",
-    //         )
-    //     }
-    // }
-    todo!()
+    axum::Json(request): axum::Json<CreateRequest>,
+) -> Response {
+    match link::cat::update(&ctx, cat_name.as_str(), request).await {
+        Ok(r) => response::success(axum::http::StatusCode::OK, r),
+        Err(e) => {
+            tracing::error!("err: {:?}", e);
+            response::error(axum::http::StatusCode::INTERNAL_SERVER_ERROR, e.to_string())
+        }
+    }
 }
 
-pub async fn delete(
+#[tracing::instrument(name = "controller::cat::delete", skip_all)]
+pub async fn delete(State(ctx): State<Ctx>, Path(cat_name): Path<String>) -> Response {
+    match link::cat::delete(&ctx, cat_name.as_str()).await {
+        Ok(r) => response::success(axum::http::StatusCode::OK, r),
+        Err(e) => {
+            tracing::error!("err: {:?}", e);
+            response::error(axum::http::StatusCode::INTERNAL_SERVER_ERROR, e.to_string())
+        }
+    }
+}
+
+#[tracing::instrument(name = "controller::cat::add-topic", skip_all)]
+pub async fn add_topic(
     State(ctx): State<Ctx>,
-    Path(query): Path<CatApiQuery>,
-) -> axum::response::Response {
-    // match get_by_id(&ctx.db, topic_id).await {
-    //     Ok(r) => super::success(axum::http::StatusCode::CREATED, r),
-    //     Err(e) => {
-    //         eprintln!("err: {:?}", e);
-    //         super::error(
-    //             axum::http::StatusCode::INTERNAL_SERVER_ERROR,
-    //             "some-error-occurred",
-    //         )
-    //     }
-    // }
-    todo!()
+    Path((cat_name, topic_name)): Path<(String, String)>,
+) -> Response {
+    match link::cat::add_topic(&ctx, cat_name.as_str(), topic_name.as_str()).await {
+        Ok(r) => response::success(axum::http::StatusCode::OK, r),
+        Err(e) => {
+            tracing::error!("err: {:?}", e);
+            response::error(axum::http::StatusCode::INTERNAL_SERVER_ERROR, e.to_string())
+        }
+    }
+}
+
+#[tracing::instrument(name = "controller::cat::remove-topic", skip_all)]
+pub async fn remove_topic(
+    State(ctx): State<Ctx>,
+    Path((cat_name, topic_name)): Path<(String, String)>,
+) -> Response {
+    match link::cat::remove_topic(&ctx, cat_name.as_str(), topic_name.as_str()).await {
+        Ok(r) => response::success(axum::http::StatusCode::OK, r),
+        Err(e) => {
+            tracing::error!("err: {:?}", e);
+            response::error(axum::http::StatusCode::INTERNAL_SERVER_ERROR, e.to_string())
+        }
+    }
 }
 
 #[derive(serde::Deserialize, Debug)]

@@ -27,7 +27,15 @@ pub async fn router<S>(ctx: crate::ctx::Ctx) -> axum::Router<S> {
                 .route("/cat/{cat-name}", routing::get(link::cat::get))
                 .route("/cat", routing::get(link::cat::list))
                 .route("/cat/{cat-name}", routing::put(link::cat::update))
-                .route("/cat/{cat-name}", routing::delete(link::cat::delete)),
+                .route("/cat/{cat-name}", routing::delete(link::cat::delete))
+                .route(
+                    "/cat/{cat-name}/{topic-name}",
+                    routing::put(link::cat::add_topic),
+                )
+                .route(
+                    "/cat/{cat-name}/{topic-name}",
+                    routing::delete(link::cat::remove_topic),
+                ),
         )
         .with_state(ctx)
 }
