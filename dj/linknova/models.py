@@ -14,32 +14,36 @@ class DateTimeBase(models.Model):
 
 # Topics are the categorization of the categories
 class Topic(DateTimeBase):
-    name = models.CharField(max_length=255, db_index=True, unique=True)
+    name = models.CharField(max_length=255, db_index=True)
     display_name = models.CharField(max_length=512)
     description = models.CharField(max_length=1024, null=True, blank=True)
+    about = models.TextField(null=True, blank=True)
     priority = models.IntegerField(default=0)
-    is_active = models.BooleanField(default=True)
+    active = models.BooleanField(default=True)
+    public = models.BooleanField(default=False)
     user = models.CharField(max_length=255)
 
     class Meta:
         db_table = "linknova_topic"
+        unique_together = ("user", "name")
 
 
 # Directory means categories/label/tags
 class Category(DateTimeBase):
-    name = models.CharField(max_length=255, db_index=True, unique=True)
+    name = models.CharField(max_length=255, db_index=True)
     display_name = models.CharField(max_length=255)
     description = models.CharField(max_length=1024, null=True, blank=True)
     about = models.TextField(null=True, blank=True)
     user = models.CharField(max_length=255)
-    is_active = models.BooleanField(default=True)
-    # If public so any logged-in user ca see the labeled content.
+    active = models.BooleanField(default=True)
+    # If public so any logged-in user can see the labeled content.
     public = models.BooleanField(default=False)
 
     # TODO: Handle roles and permission for different users together
     # TODO: Handle collaboration, for now keeping public and private concept
     class Meta:
         db_table = "linknova_category"
+        unique_together = ("user", "name")
 
 
 # a topic can have multiple categories
