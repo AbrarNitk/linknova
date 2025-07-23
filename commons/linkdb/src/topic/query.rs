@@ -67,10 +67,7 @@ pub async fn get_by_name(
 }
 
 #[tracing::instrument(name = "linkdb::topic::list-all", skip_all, err)]
-pub async fn list_all(
-    pool: &sqlx::PgPool,
-    name: &str,
-) -> Result<Vec<types::TopicRowView>, sqlx::Error> {
+pub async fn list_all(pool: &sqlx::PgPool) -> Result<Vec<types::TopicRowView>, sqlx::Error> {
     let query = r#"
         select
             name,
@@ -84,7 +81,11 @@ pub async fn list_all(
         FROM linknova_topic
     "#;
 
-    sqlx::query_as(query).bind(name).fetch_all(pool).await
+    sqlx::query_as(query).fetch_all(pool).await
+}
+
+async fn list_by_cat_name(pool: &sqlx::PgPool, cat_name: &str) -> Result<(), sqlx::Error> {
+    Ok(())
 }
 
 #[tracing::instrument(name = "linkdb::topic::delete", skip_all, err)]

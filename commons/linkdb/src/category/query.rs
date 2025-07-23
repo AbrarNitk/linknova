@@ -85,6 +85,34 @@ pub async fn list_all(
     sqlx::query_as(query).bind(name).fetch_all(pool).await
 }
 
+pub async fn list_by_topic_name(
+    pool: &sqlx::PgPool,
+    topic_names: &[String],
+) -> Result<Vec<crate::CategoryRowView>, sqlx::Error> {
+    let query = r#"
+        select
+            cat.name,
+            cat.display_name,
+            cat.description,
+            cat.priority,
+            cat.active,
+            cat.public,
+            cat.created_on,
+            cat.updated_on
+        FROM linknova_category as cat
+        JOIN linknova_topic_category_map as mapping
+            ON cat.id = mapping.category_id
+        JOIN linknova_topic as topic
+            ON mapping.topic_id = topic.id
+        WHERE topic.name = ANY($1)
+    "#;
+
+    sqlx::query_as(query)
+        .bind(topic_names)
+        .fetch_all(pool)
+        .await
+}
+
 #[tracing::instrument(name = "linkdb::topic::delete", skip_all, err)]
 pub async fn delete(pool: &sqlx::PgPool, name: &str) -> Result<(), sqlx::Error> {
     let query = r#"
