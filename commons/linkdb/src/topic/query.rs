@@ -84,7 +84,21 @@ pub async fn list_all(pool: &sqlx::PgPool) -> Result<Vec<types::TopicRowView>, s
     sqlx::query_as(query).fetch_all(pool).await
 }
 
-async fn list_by_cat_name(pool: &sqlx::PgPool, cat_name: &str) -> Result<(), sqlx::Error> {
+async fn list_by_cat_name(pool: &sqlx::PgPool, cat_names: &[String]) -> Result<(), sqlx::Error> {
+    let query = r#"
+        SELECT
+            topic.name,
+            topic.display_name,
+            topic.description,
+            topic.priority,
+            topic.active,
+            topic.public,
+            topic.created_on,
+            topic.updated_on
+        FROM linknova_topic as topic
+        JOIN linknova_topic_category_map as mapping
+            ON
+    "#;
     Ok(())
 }
 
