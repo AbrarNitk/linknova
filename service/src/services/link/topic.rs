@@ -7,7 +7,7 @@ use crate::ctx::Ctx;
 pub async fn create(
     ctx: &Ctx,
     user_id: &str,
-    req: link::topic::CreateRequest,
+    req: link::types::CreateRequest,
 ) -> Result<(), types::TopicError> {
     tracing::info!(msg = "userid", user_id);
 
@@ -26,8 +26,28 @@ pub async fn create(
 }
 
 #[tracing::instrument(name = "service::topic-get", skip_all)]
-pub async fn get(ctx: &Ctx, topic_name: &str) -> Result<(), types::TopicError> {
-    Ok(())
+pub async fn get(
+    ctx: &Ctx,
+    topic_name: &str,
+) -> Result<link::types::GetResponse, types::TopicError> {
+    let topic_row = linkdb::topic::get_by_name(&ctx.pg_pool, topic_name).await?;
+
+    match topic_row {
+        Some(t) => Ok(link::types::GetResponse {
+            name: t.name,
+            description: t.description,
+            display_name: t.display_name,
+            priority: t.priority,
+            about: t.about,
+            public: false,
+            created_on: t.created_on,
+            updated_on: t.updated_on,
+        }),
+        None => Err(types::TopicError::NotFound(format!(
+            "topic not found with name: {}",
+            topic_name
+        ))),
+    }
 }
 
 #[tracing::instrument(name = "service::topic-list", skip_all)]
@@ -39,7 +59,7 @@ pub async fn list(ctx: &Ctx) -> Result<(), types::TopicError> {
 pub async fn update(
     ctx: &Ctx,
     topic_name: &str,
-    update_req: link::topic::CreateRequest,
+    update_req: link::types::CreateRequest,
 ) -> Result<(), types::TopicError> {
     Ok(())
 }

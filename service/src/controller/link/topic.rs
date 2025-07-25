@@ -6,22 +6,11 @@ use axum::extract::{Path, State};
 use axum::response::Response;
 use axum::Extension;
 
-#[derive(serde::Deserialize)]
-pub struct CreateRequest {
-    pub name: String,
-    pub description: Option<String>,
-    pub display_name: Option<String>,
-    pub priority: Option<i32>,
-    pub about: Option<String>,
-    #[serde(default)]
-    pub public: bool,
-}
-
 #[tracing::instrument(name = "controller::topic::create", skip_all, parent=None)]
 pub async fn create(
     State(ctx): State<Ctx>,
     Extension(user): Extension<AuthUser>,
-    axum::Json(request): axum::Json<CreateRequest>,
+    axum::Json(request): axum::Json<super::types::CreateRequest>,
 ) -> Response {
     tracing::info!(msg = "userid", user.user_id);
     match link::topic::create(&ctx, user.user_id.as_str(), request).await {
@@ -59,7 +48,7 @@ pub async fn list(State(ctx): State<Ctx>) -> Response {
 pub async fn update(
     State(ctx): State<Ctx>,
     Path(topic_name): Path<String>,
-    axum::Json(request): axum::Json<CreateRequest>,
+    axum::Json(request): axum::Json<super::types::CreateRequest>,
 ) -> Response {
     match link::topic::update(&ctx, topic_name.as_str(), request).await {
         Ok(r) => response::success(axum::http::StatusCode::OK, r),

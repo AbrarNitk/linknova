@@ -1,7 +1,5 @@
 use crate::controller::response;
-use crate::ctx::Ctx;
 use axum::extract::Request;
-use axum::extract::State;
 use percent_encoding::percent_decode;
 
 #[tracing::instrument(name = "middleware::auth-user", skip_all)]

@@ -23,7 +23,7 @@ pub struct TopicRow {
     pub priority: i32,
     pub active: bool,
     pub public: bool,
-    pub user: String,
+    pub user_id: String,
     pub created_on: chrono::DateTime<chrono::Utc>,
     pub updated_on: chrono::DateTime<chrono::Utc>,
 }

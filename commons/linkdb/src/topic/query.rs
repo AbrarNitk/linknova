@@ -50,6 +50,7 @@ pub async fn get_by_name(
 ) -> Result<Option<types::TopicRow>, sqlx::Error> {
     let query = r#"
         select
+            id,
             name,
             display_name,
             description,
