@@ -1,3 +1,15 @@
 pub async fn map(pool: &sqlx::PgPool, topic_id: i64, category_id: i64) -> Result<(), sqlx::Error> {
-    todo!()
+    let query = r#"
+        INSERT INTO linknova_topic_category_map(
+            topic_id, category_id
+        ) VALUES($1, $2)
+        "#;
+
+    let result = sqlx::query(query)
+        .bind(topic_id)
+        .bind(category_id)
+        .execute(pool)
+        .await?;
+    assert_eq!(result.rows_affected(), 1);
+    Ok(())
 }
