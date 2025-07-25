@@ -1,11 +1,11 @@
 meta {
-  name: Topic Create
+  name: Create
   type: http
   seq: 4
 }
 
-post {
-  url: http://127.0.0.1:8000/-/link/cat
+get {
+  url: http://127.0.0.1:8000/-/link/topic/ui-lang-new-1
   body: json
   auth: none
 }
@@ -17,10 +17,9 @@ headers {
 
 body:json {
   {
-    "name": "c5",
+    "name": "ui-lang-new-1",
     "description": "this contains link about",
     "display_name": "Ui Lang",
-    "priority": 10,
-    "about": "somethings about the category"
+    "priority": 10
   }
 }

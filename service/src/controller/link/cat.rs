@@ -1,8 +1,10 @@
 use crate::controller::response;
 use crate::ctx::Ctx;
+use crate::middlewares::user::AuthUser;
 use crate::services::link;
 use axum::extract::{Path, Query, State};
 use axum::response::Response;
+use axum::Extension;
 
 #[derive(serde::Deserialize)]
 pub struct CreateRequest {
@@ -10,18 +12,19 @@ pub struct CreateRequest {
     pub display_name: Option<String>,
     pub about: Option<String>,
     pub description: Option<String>,
-    pub topics: Vec<String>,
     #[serde(default)]
     pub public: bool,
-    pub user: String,
+    #[serde(default)]
+    pub priority: i32,
 }
 
 #[tracing::instrument(name = "controller::cat::create", skip_all)]
 pub async fn create(
     State(ctx): State<Ctx>,
+    Extension(user): Extension<AuthUser>,
     axum::Json(request): axum::Json<CreateRequest>,
 ) -> Response {
-    match link::cat::create(&ctx, request).await {
+    match link::cat::create(&ctx, user.user_id.as_str(), request).await {
         Ok(r) => response::success(axum::http::StatusCode::CREATED, r),
         Err(e) => {
             tracing::error!("err: {:?}", e);

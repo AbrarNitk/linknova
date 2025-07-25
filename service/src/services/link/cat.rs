@@ -4,7 +4,22 @@ use crate::controller::link;
 use crate::ctx::Ctx;
 
 #[tracing::instrument(name = "service::cat-create", skip_all)]
-pub async fn create(ctx: &Ctx, req: link::cat::CreateRequest) -> Result<(), types::CatError> {
+pub async fn create(
+    ctx: &Ctx,
+    user_id: &str,
+    req: link::cat::CreateRequest,
+) -> Result<(), types::CatError> {
+    let row = linkdb::category::CatRowI {
+        name: req.name,
+        display_name: req.display_name,
+        description: req.description,
+        about: req.about,
+        priority: 0,
+        active: true,
+        public: req.public,
+        user_id: user_id.to_string(),
+    };
+    linkdb::category::insert(&ctx.pg_pool, row).await?;
     Ok(())
 }
 
