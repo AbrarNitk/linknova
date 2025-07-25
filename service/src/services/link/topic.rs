@@ -4,7 +4,12 @@ use crate::controller::link;
 use crate::ctx::Ctx;
 
 #[tracing::instrument(name = "service::topic-create", skip_all)]
-pub async fn create(ctx: &Ctx, req: link::topic::CreateRequest) -> Result<(), types::TopicError> {
+pub async fn create(
+    ctx: &Ctx,
+    user_id: &str,
+    req: link::topic::CreateRequest) -> Result<(), types::TopicError> {
+    tracing::info!(msg="userid", user_id);
+
     Ok(())
 }
 

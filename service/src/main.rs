@@ -41,7 +41,7 @@ pub async fn http_main() {
 
     let profile_name = env("PROFILE_NAME").unwrap_or_else(|| "local".to_string());
 
-    println!("profile: {}", profile_name);
+    tracing::info!("profile: {}", profile_name);
 
     let path = current_dir().unwrap();
     let settings = service::settings::Settings::new_with_file(

@@ -4,6 +4,8 @@ use axum::extract::Request;
 use axum::extract::State;
 use percent_encoding::percent_decode;
 
+
+#[tracing::instrument(name = "middleware::auth-user", skip_all)]
 pub async fn auth_user(
     auth_user: AuthUser,
     mut req: Request,
