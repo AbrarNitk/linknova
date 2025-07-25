@@ -73,9 +73,9 @@ pub async fn list(
 
 #[tracing::instrument(name = "service::topic-update", skip_all)]
 pub async fn update(
-    ctx: &Ctx,
-    topic_name: &str,
-    update_req: link::types::CreateRequest,
+    _ctx: &Ctx,
+    _topic_name: &str,
+    _update_req: link::types::CreateRequest,
 ) -> Result<(), types::TopicError> {
     Ok(())
 }
@@ -93,6 +93,17 @@ pub async fn add_category(
     topic_name: &str,
     cat_name: &str,
 ) -> Result<(), types::TopicError> {
+    let topic_id = linkdb::topic::get_id_by_name(&ctx.pg_pool, user_id, topic_name)
+        .await?
+        .ok_or_else(|| types::TopicError::NotFound(format!("topic with name: `{}`", topic_name)))?;
+    let category_id = linkdb::category::get_id_by_name(&ctx.pg_pool, user_id, cat_name)
+        .await?
+        .ok_or_else(|| {
+            types::TopicError::NotFound(format!("category with name: `{}`", cat_name))
+        })?;
+
+    linkdb::topic_cat_map::connect(&ctx.pg_pool, topic_id, category_id).await?;
+
     Ok(())
 }
 
@@ -103,5 +114,16 @@ pub async fn remove_category(
     topic_name: &str,
     cat_name: &str,
 ) -> Result<(), types::TopicError> {
+    let topic_id = linkdb::topic::get_id_by_name(&ctx.pg_pool, user_id, topic_name)
+        .await?
+        .ok_or_else(|| types::TopicError::NotFound(format!("topic with name: `{}`", topic_name)))?;
+    let category_id = linkdb::category::get_id_by_name(&ctx.pg_pool, user_id, cat_name)
+        .await?
+        .ok_or_else(|| {
+            types::TopicError::NotFound(format!("category with name: `{}`", cat_name))
+        })?;
+
+    linkdb::topic_cat_map::remove(&ctx.pg_pool, topic_id, category_id).await?;
+
     Ok(())
 }
