@@ -23,8 +23,12 @@ pub async fn create(
 }
 
 #[tracing::instrument(name = "controller::topic::get", skip_all)]
-pub async fn get(State(ctx): State<Ctx>, Path(topic_name): Path<String>) -> Response {
-    match link::topic::get(&ctx, topic_name.as_str()).await {
+pub async fn get(
+    State(ctx): State<Ctx>,
+    Extension(user): Extension<AuthUser>,
+    Path(topic_name): Path<String>,
+) -> Response {
+    match link::topic::get(&ctx, user.user_id.as_str(), topic_name.as_str()).await {
         Ok(r) => response::success(axum::http::StatusCode::OK, r),
         Err(e) => {
             tracing::error!("err: {:?}", e);
@@ -34,8 +38,8 @@ pub async fn get(State(ctx): State<Ctx>, Path(topic_name): Path<String>) -> Resp
 }
 
 #[tracing::instrument(name = "controller::topic::list", skip_all)]
-pub async fn list(State(ctx): State<Ctx>) -> Response {
-    match link::topic::list(&ctx).await {
+pub async fn list(State(ctx): State<Ctx>, Extension(user): Extension<AuthUser>) -> Response {
+    match link::topic::list(&ctx, user.user_id.as_str()).await {
         Ok(r) => response::success(axum::http::StatusCode::OK, r),
         Err(e) => {
             tracing::error!("err: {:?}", e);
@@ -47,6 +51,7 @@ pub async fn list(State(ctx): State<Ctx>) -> Response {
 #[tracing::instrument(name = "controller::topic::update", skip_all)]
 pub async fn update(
     State(ctx): State<Ctx>,
+    Extension(_user): Extension<AuthUser>,
     Path(topic_name): Path<String>,
     axum::Json(request): axum::Json<super::types::CreateRequest>,
 ) -> Response {
@@ -60,8 +65,12 @@ pub async fn update(
 }
 
 #[tracing::instrument(name = "controller::topic::delete", skip_all)]
-pub async fn delete(State(ctx): State<Ctx>, Path(topic_name): Path<String>) -> Response {
-    match link::topic::delete(&ctx, topic_name.as_str()).await {
+pub async fn delete(
+    State(ctx): State<Ctx>,
+    Extension(user): Extension<AuthUser>,
+    Path(topic_name): Path<String>,
+) -> Response {
+    match link::topic::delete(&ctx, user.user_id.as_str(), topic_name.as_str()).await {
         Ok(r) => response::success(axum::http::StatusCode::OK, r),
         Err(e) => {
             tracing::error!("err: {:?}", e);
@@ -73,9 +82,17 @@ pub async fn delete(State(ctx): State<Ctx>, Path(topic_name): Path<String>) -> R
 #[tracing::instrument(name = "controller::topic::add-category", skip_all)]
 pub async fn add_cat(
     State(ctx): State<Ctx>,
+    Extension(user): Extension<AuthUser>,
     Path((topic_name, cat_name)): Path<(String, String)>,
 ) -> Response {
-    match link::topic::add_category(&ctx, topic_name.as_str(), cat_name.as_str()).await {
+    match link::topic::add_category(
+        &ctx,
+        user.user_id.as_str(),
+        topic_name.as_str(),
+        cat_name.as_str(),
+    )
+    .await
+    {
         Ok(r) => response::success(axum::http::StatusCode::OK, r),
         Err(e) => {
             tracing::error!("err: {:?}", e);
@@ -87,9 +104,17 @@ pub async fn add_cat(
 #[tracing::instrument(name = "controller::topic::remove-category", skip_all)]
 pub async fn remove_cat(
     State(ctx): State<Ctx>,
+    Extension(user): Extension<AuthUser>,
     Path((topic_name, cat_name)): Path<(String, String)>,
 ) -> Response {
-    match link::topic::remove_category(&ctx, topic_name.as_str(), cat_name.as_str()).await {
+    match link::topic::remove_category(
+        &ctx,
+        user.user_id.as_str(),
+        topic_name.as_str(),
+        cat_name.as_str(),
+    )
+    .await
+    {
         Ok(r) => response::success(axum::http::StatusCode::OK, r),
         Err(e) => {
             tracing::error!("err: {:?}", e);

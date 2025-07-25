@@ -28,10 +28,10 @@ pub async fn create(
 #[tracing::instrument(name = "service::topic-get", skip_all)]
 pub async fn get(
     ctx: &Ctx,
+    user_id: &str,
     topic_name: &str,
 ) -> Result<link::types::GetResponse, types::TopicError> {
-    let topic_row = linkdb::topic::get_by_name(&ctx.pg_pool, topic_name).await?;
-
+    let topic_row = linkdb::topic::get_by_name(&ctx.pg_pool, user_id, topic_name).await?;
     match topic_row {
         Some(t) => Ok(link::types::GetResponse {
             name: t.name,
@@ -39,7 +39,7 @@ pub async fn get(
             display_name: t.display_name,
             priority: t.priority,
             about: t.about,
-            public: false,
+            public: t.public,
             created_on: t.created_on,
             updated_on: t.updated_on,
         }),
@@ -51,8 +51,24 @@ pub async fn get(
 }
 
 #[tracing::instrument(name = "service::topic-list", skip_all)]
-pub async fn list(ctx: &Ctx) -> Result<(), types::TopicError> {
-    Ok(())
+pub async fn list(
+    ctx: &Ctx,
+    user_id: &str,
+) -> Result<Vec<link::types::GetResponse>, types::TopicError> {
+    let rows = linkdb::topic::list_all(&ctx.pg_pool, user_id).await?;
+    Ok(rows
+        .into_iter()
+        .map(|r| link::types::GetResponse {
+            name: r.name,
+            description: r.description,
+            display_name: r.display_name,
+            priority: r.priority,
+            about: None,
+            public: r.public,
+            created_on: r.created_on,
+            updated_on: r.updated_on,
+        })
+        .collect())
 }
 
 #[tracing::instrument(name = "service::topic-update", skip_all)]
@@ -65,13 +81,15 @@ pub async fn update(
 }
 
 #[tracing::instrument(name = "service::topic-delete", skip_all)]
-pub async fn delete(ctx: &Ctx, topic_name: &str) -> Result<(), types::TopicError> {
+pub async fn delete(ctx: &Ctx, user_id: &str, topic_name: &str) -> Result<(), types::TopicError> {
+    linkdb::topic::delete(&ctx.pg_pool, user_id, topic_name).await?;
     Ok(())
 }
 
 #[tracing::instrument(name = "service::topic-add-category", skip_all)]
 pub async fn add_category(
     ctx: &Ctx,
+    user_id: &str,
     topic_name: &str,
     cat_name: &str,
 ) -> Result<(), types::TopicError> {
@@ -81,6 +99,7 @@ pub async fn add_category(
 #[tracing::instrument(name = "service::topic-remove-category", skip_all)]
 pub async fn remove_category(
     ctx: &Ctx,
+    user_id: &str,
     topic_name: &str,
     cat_name: &str,
 ) -> Result<(), types::TopicError> {

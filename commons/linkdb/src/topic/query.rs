@@ -46,6 +46,7 @@ pub async fn insert(
 #[tracing::instrument(name = "linkdb::topic::get-by-name", skip_all, err)]
 pub async fn get_by_name(
     pool: &sqlx::PgPool,
+    user_id: &str,
     name: &str,
 ) -> Result<Option<types::TopicRow>, sqlx::Error> {
     let query = r#"
@@ -62,16 +63,24 @@ pub async fn get_by_name(
             created_on,
             updated_on
         FROM linknova_topic
-        WHERE name = $1
+        WHERE name = $1 AND user_id = $2
     "#;
 
-    sqlx::query_as(query).bind(name).fetch_optional(pool).await
+    sqlx::query_as(query)
+        .bind(name)
+        .bind(user_id)
+        .fetch_optional(pool)
+        .await
 }
 
 #[tracing::instrument(name = "linkdb::topic::list-all", skip_all, err)]
-pub async fn list_all(pool: &sqlx::PgPool) -> Result<Vec<types::TopicRowView>, sqlx::Error> {
+pub async fn list_all(
+    pool: &sqlx::PgPool,
+    user_id: &str,
+) -> Result<Vec<types::TopicRowView>, sqlx::Error> {
     let query = r#"
         select
+            id,
             name,
             display_name,
             description,
@@ -81,15 +90,17 @@ pub async fn list_all(pool: &sqlx::PgPool) -> Result<Vec<types::TopicRowView>, s
             created_on,
             updated_on
         FROM linknova_topic
+        WHERE user_id = $1
     "#;
 
-    sqlx::query_as(query).fetch_all(pool).await
+    sqlx::query_as(query).bind(user_id).fetch_all(pool).await
 }
 
 #[tracing::instrument(name = "linkdb::topic::list-by-cat-name", skip_all, err)]
 pub async fn list_by_cat_name(
     pool: &sqlx::PgPool,
     cat_names: &[String],
+    user_id: &str,
 ) -> Result<Vec<TopicRowView>, sqlx::Error> {
     let query = r#"
         SELECT
@@ -106,18 +117,34 @@ pub async fn list_by_cat_name(
             ON topic.id = mapping.topic_id
         JOIN linknova_category as category
             ON mapping.category_id = category.id
-        WHERE category.name = ANY($1)
+        WHERE
+            topic.user_id = $1 AND
+            category.user_id = $2 AND
+            category.name = ANY($1)
     "#;
 
-    sqlx::query_as(query).bind(cat_names).fetch_all(pool).await
+    sqlx::query_as(query)
+        .bind(user_id)
+        .bind(user_id)
+        .bind(cat_names)
+        .fetch_all(pool)
+        .await
 }
 
 #[tracing::instrument(name = "linkdb::topic::delete", skip_all, err)]
-pub async fn delete(pool: &sqlx::PgPool, name: &str) -> Result<(), sqlx::Error> {
+pub async fn delete(
+    pool: &sqlx::PgPool,
+    user_id: &str,
+    topic_name: &str,
+) -> Result<(), sqlx::Error> {
     let query = r#"
-        DELETE FROM linknova_topic WHERE name = $1 returning id
+        DELETE FROM linknova_topic WHERE name = $1 user_id = $2 returning id
     "#;
 
-    let (_id,): (i64,) = sqlx::query_as(query).bind(name).fetch_one(pool).await?;
+    let (_id,): (i64,) = sqlx::query_as(query)
+        .bind(topic_name)
+        .bind(user_id)
+        .fetch_one(pool)
+        .await?;
     Ok(())
 }

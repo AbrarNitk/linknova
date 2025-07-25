@@ -4,7 +4,7 @@ meta {
   seq: 4
 }
 
-post {
+get {
   url: http://127.0.0.1:8000/-/link/topic
   body: json
   auth: none
@@ -12,7 +12,7 @@ post {
 
 headers {
   secrets: secrets-key
-  ~user-id: abrark
+  user-id: abrark
 }
 
 body:json {
