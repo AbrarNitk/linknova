@@ -43,7 +43,8 @@ pub async fn insert(
 #[tracing::instrument(name = "linkdb::category::get-by-name", skip_all, err)]
 pub async fn get_by_name(
     pool: &sqlx::PgPool,
-    name: &str,
+    user_id: &str,
+    cat_name: &str,
 ) -> Result<Option<crate::CatRow>, sqlx::Error> {
     let query = r#"
         select
@@ -58,10 +59,33 @@ pub async fn get_by_name(
             created_on,
             updated_on
         FROM linknova_category
-        WHERE name = $1
+        WHERE name = $1 and user_id = $2
     "#;
 
-    sqlx::query_as(query).bind(name).fetch_optional(pool).await
+    sqlx::query_as(query)
+        .bind(cat_name)
+        .bind(user_id)
+        .fetch_optional(pool)
+        .await
+}
+
+#[tracing::instrument(name = "linkdb::category::get-id-by-name", skip_all, err)]
+pub async fn get_id_by_name(
+    pool: &sqlx::PgPool,
+    user_id: &str,
+    cat_name: &str,
+) -> Result<Option<i64>, sqlx::Error> {
+    let query = r#"
+        select id FROM linknova_category
+        WHERE name = $1 and user_id = $2
+    "#;
+
+    let id: Option<(i64,)> = sqlx::query_as(query)
+        .bind(cat_name)
+        .bind(user_id)
+        .fetch_optional(pool)
+        .await?;
+    Ok(id.map(|(x,)| x))
 }
 
 #[tracing::instrument(name = "linkdb::category::list-all", skip_all, err)]

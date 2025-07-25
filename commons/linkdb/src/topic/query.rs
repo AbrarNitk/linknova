@@ -73,6 +73,26 @@ pub async fn get_by_name(
         .await
 }
 
+#[tracing::instrument(name = "linkdb::topic::get-id-by-name", skip_all, err)]
+pub async fn get_id_by_name(
+    pool: &sqlx::PgPool,
+    user_id: &str,
+    name: &str,
+) -> Result<Option<i64>, sqlx::Error> {
+    let query = r#"
+        select id  FROM linknova_topic
+        WHERE name = $1 AND user_id = $2
+    "#;
+
+    let id: Option<(i64,)> = sqlx::query_as(query)
+        .bind(name)
+        .bind(user_id)
+        .fetch_optional(pool)
+        .await?;
+
+    Ok(id.map(|(x,)| x))
+}
+
 #[tracing::instrument(name = "linkdb::topic::list-all", skip_all, err)]
 pub async fn list_all(
     pool: &sqlx::PgPool,
