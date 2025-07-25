@@ -6,12 +6,11 @@ use percent_encoding::percent_decode;
 
 pub async fn auth_user(
     State(ctx): State<Ctx>,
-    auth_secrets: AuthUser,
+    auth_user: AuthUser,
     mut req: Request,
     next: axum::middleware::Next,
 ) -> Result<axum::response::Response, axum::response::Response> {
-    // req.
-    //     req.extensions_mut().insert(entity);
+    req.extensions_mut().insert(auth_user);
     Ok(next.run(req).await)
 }
 

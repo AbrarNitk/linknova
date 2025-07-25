@@ -1,5 +1,5 @@
-mod api;
-mod user;
+pub mod api;
+pub mod user;
 
 #[derive(Debug, thiserror::Error)]
 pub enum AuthError {
@@ -11,4 +11,6 @@ pub enum AuthError {
     UserNotExists,
     #[error("UserDecodeError")]
     UserDecodeError(String),
+    #[error("SecretsNotAcceptedError")]
+    SecretsNotAccepted(String),
 }

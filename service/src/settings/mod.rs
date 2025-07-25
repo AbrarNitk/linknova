@@ -3,17 +3,12 @@ use config::File;
 #[derive(Debug, serde::Deserialize)]
 pub struct Settings {
     pub service: ServiceSettings,
-    pub user: User,
-}
-
-#[derive(Debug, serde::Deserialize)]
-pub struct User {
-    pub id: String,
 }
 
 #[derive(Debug, serde::Deserialize)]
 pub struct ServiceSettings {
     pub environment: String,
+    pub secrets: String,
 }
 
 impl Settings {

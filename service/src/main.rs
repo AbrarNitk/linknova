@@ -10,10 +10,10 @@ fn main() {
         .block_on(http_main());
 }
 
-fn env() -> String {
-    match std::env::var("PROFILE_NAME") {
-        Ok(env) => env.to_lowercase(),
-        Err(_) => "local".to_string(),
+fn env(name: &str) -> Option<String> {
+    match std::env::var(name) {
+        Ok(env) => Some(env.to_lowercase()),
+        Err(_) => None,
     }
 }
 
@@ -39,16 +39,16 @@ pub async fn http_main() {
         .with(tracing_subscriber::fmt::layer())
         .init();
 
-    let env_path = format!("{}.env", env());
-    println!("Environment file path: {}", env_path);
-    dotenv::from_path(env_path.as_str()).ok();
+    let profile_name = env("PROFILE_NAME").unwrap_or_else(|| "local".to_string());
+
+    println!("profile: {}", profile_name);
 
     let path = current_dir().unwrap();
     let settings = service::settings::Settings::new_with_file(
         path.join("etc/settings").as_path(),
-        env().as_str(),
+        profile_name.as_str(),
     )
-    .unwrap();
+    .expect("settings error");
 
     println!("settings: {:?}", settings);
 
@@ -76,8 +76,7 @@ pub async fn http_main() {
     let ctx = Ctx {
         db: pool,
         category_map: std::sync::Arc::new(std::sync::RwLock::new(categories)),
-        static_user: settings.user.id,
-        secret: "".to_string(),
+        secret: settings.service.secrets,
     };
 
     // let cloned_ctx = ctx.clone();

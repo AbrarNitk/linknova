@@ -8,7 +8,18 @@ pub async fn routes(ctx: crate::Ctx) -> axum::Router {
             "/-/link/health",
             axum::routing::on(axum::routing::MethodFilter::GET, health::health),
         )
-        .merge(link::router(ctx.clone()).await)
+        .merge(
+            link::router(ctx.clone())
+                .await
+                .route_layer(axum::middleware::from_fn_with_state(
+                    ctx.clone(),
+                    crate::middlewares::api::verify_secrets,
+                ))
+                .route_layer(axum::middleware::from_fn_with_state(
+                    ctx,
+                    crate::middlewares::user::auth_user,
+                )),
+        )
         .merge(hn::router().await);
 
     // .route(
