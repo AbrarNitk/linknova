@@ -1,22 +1,25 @@
 #[derive(serde::Deserialize)]
-pub struct TopicCreateReq {
+pub struct CatCreateReq {
     pub name: String,
-    pub description: Option<String>,
     pub display_name: Option<String>,
-    pub priority: Option<i32>,
     pub about: Option<String>,
+    pub description: Option<String>,
     #[serde(default)]
     pub public: bool,
+    #[serde(default)]
+    pub priority: i32,
 }
 
 #[derive(serde::Serialize)]
-pub struct TopicGetRes {
+pub struct CatGetRes {
     pub name: String,
-    pub description: Option<String>,
     pub display_name: Option<String>,
-    pub priority: i32,
     pub about: Option<String>,
+    pub description: Option<String>,
+    #[serde(default)]
     pub public: bool,
+    #[serde(default)]
+    pub priority: i32,
     pub created_on: chrono::DateTime<chrono::Utc>,
     pub updated_on: chrono::DateTime<chrono::Utc>,
 }

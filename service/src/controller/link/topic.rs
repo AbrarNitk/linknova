@@ -10,7 +10,7 @@ use axum::Extension;
 pub async fn create(
     State(ctx): State<Ctx>,
     Extension(user): Extension<AuthUser>,
-    axum::Json(request): axum::Json<super::types::CreateRequest>,
+    axum::Json(request): axum::Json<super::types::TopicCreateReq>,
 ) -> Response {
     tracing::info!(msg = "userid", user.user_id);
     match link::topic::create(&ctx, user.user_id.as_str(), request).await {
@@ -53,7 +53,7 @@ pub async fn update(
     State(ctx): State<Ctx>,
     Extension(_user): Extension<AuthUser>,
     Path(topic_name): Path<String>,
-    axum::Json(request): axum::Json<super::types::CreateRequest>,
+    axum::Json(request): axum::Json<super::types::TopicCreateReq>,
 ) -> Response {
     match link::topic::update(&ctx, topic_name.as_str(), request).await {
         Ok(r) => response::success(axum::http::StatusCode::OK, r),

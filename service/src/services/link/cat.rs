@@ -1,14 +1,9 @@
 pub mod types;
-
-use crate::controller::link;
+use crate::controller::link::types::{CatCreateReq, CatGetRes};
 use crate::ctx::Ctx;
 
 #[tracing::instrument(name = "service::cat-create", skip_all)]
-pub async fn create(
-    ctx: &Ctx,
-    user_id: &str,
-    req: link::cat::CreateRequest,
-) -> Result<(), types::CatError> {
+pub async fn create(ctx: &Ctx, user_id: &str, req: CatCreateReq) -> Result<(), types::CatError> {
     let row = linkdb::category::CatRowI {
         name: req.name,
         display_name: req.display_name,
@@ -24,8 +19,22 @@ pub async fn create(
 }
 
 #[tracing::instrument(name = "service::cat-get", skip_all)]
-pub async fn get(ctx: &Ctx, cat_name: &str) -> Result<(), types::CatError> {
-    Ok(())
+pub async fn get(ctx: &Ctx, user_id: &str, cat_name: &str) -> Result<CatGetRes, types::CatError> {
+    let cat_row = linkdb::category::get_by_name(&ctx.pg_pool, user_id, cat_name)
+        .await?
+        .ok_or_else(|| {
+            types::CatError::NotFound(format!("cat with name: `{}` not found", cat_name))
+        })?;
+    Ok(CatGetRes {
+        name: cat_row.name,
+        display_name: cat_row.display_name,
+        about: cat_row.about,
+        description: cat_row.description,
+        public: cat_row.public,
+        priority: cat_row.priority,
+        created_on: cat_row.created_on,
+        updated_on: cat_row.updated_on,
+    })
 }
 
 #[tracing::instrument(name = "service::cat-list", skip_all)]
@@ -34,11 +43,7 @@ pub async fn list(ctx: &Ctx, topics: &[String]) -> Result<(), types::CatError> {
 }
 
 #[tracing::instrument(name = "service::cat-update", skip_all)]
-pub async fn update(
-    ctx: &Ctx,
-    cat_name: &str,
-    req: link::cat::CreateRequest,
-) -> Result<(), types::CatError> {
+pub async fn update(ctx: &Ctx, cat_name: &str, req: CatCreateReq) -> Result<(), types::CatError> {
     Ok(())
 }
 

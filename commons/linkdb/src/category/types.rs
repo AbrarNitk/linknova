@@ -23,9 +23,9 @@ pub struct CatRow {
     pub priority: i32,
     pub active: bool,
     pub public: bool,
-    pub user: String,
-    pub created_on: String,
-    pub updated_on: String,
+    pub user_id: String,
+    pub created_on: chrono::DateTime<chrono::Utc>,
+    pub updated_on: chrono::DateTime<chrono::Utc>,
 }
 
 #[derive(FromRow, Debug)]

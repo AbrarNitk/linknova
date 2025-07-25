@@ -7,7 +7,7 @@ use crate::ctx::Ctx;
 pub async fn create(
     ctx: &Ctx,
     user_id: &str,
-    req: link::types::CreateRequest,
+    req: link::types::TopicCreateReq,
 ) -> Result<(), types::TopicError> {
     tracing::info!(msg = "userid", user_id);
 
@@ -30,10 +30,10 @@ pub async fn get(
     ctx: &Ctx,
     user_id: &str,
     topic_name: &str,
-) -> Result<link::types::GetResponse, types::TopicError> {
+) -> Result<link::types::TopicGetRes, types::TopicError> {
     let topic_row = linkdb::topic::get_by_name(&ctx.pg_pool, user_id, topic_name).await?;
     match topic_row {
-        Some(t) => Ok(link::types::GetResponse {
+        Some(t) => Ok(link::types::TopicGetRes {
             name: t.name,
             description: t.description,
             display_name: t.display_name,
@@ -54,11 +54,11 @@ pub async fn get(
 pub async fn list(
     ctx: &Ctx,
     user_id: &str,
-) -> Result<Vec<link::types::GetResponse>, types::TopicError> {
+) -> Result<Vec<link::types::TopicGetRes>, types::TopicError> {
     let rows = linkdb::topic::list_all(&ctx.pg_pool, user_id).await?;
     Ok(rows
         .into_iter()
-        .map(|r| link::types::GetResponse {
+        .map(|r| link::types::TopicGetRes {
             name: r.name,
             description: r.description,
             display_name: r.display_name,
@@ -75,7 +75,7 @@ pub async fn list(
 pub async fn update(
     _ctx: &Ctx,
     _topic_name: &str,
-    _update_req: link::types::CreateRequest,
+    _update_req: link::types::TopicCreateReq,
 ) -> Result<(), types::TopicError> {
     Ok(())
 }

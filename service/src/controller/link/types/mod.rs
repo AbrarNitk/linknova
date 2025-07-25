@@ -1,3 +1,5 @@
+pub mod cat;
 pub mod topic;
 
-pub use topic::{CreateRequest, GetResponse};
+pub use cat::{CatCreateReq, CatGetRes};
+pub use topic::{TopicCreateReq, TopicGetRes};

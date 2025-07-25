@@ -1,3 +1,4 @@
+use super::types::CatCreateReq;
 use crate::controller::response;
 use crate::ctx::Ctx;
 use crate::middlewares::user::AuthUser;
@@ -6,23 +7,11 @@ use axum::extract::{Path, Query, State};
 use axum::response::Response;
 use axum::Extension;
 
-#[derive(serde::Deserialize)]
-pub struct CreateRequest {
-    pub name: String,
-    pub display_name: Option<String>,
-    pub about: Option<String>,
-    pub description: Option<String>,
-    #[serde(default)]
-    pub public: bool,
-    #[serde(default)]
-    pub priority: i32,
-}
-
 #[tracing::instrument(name = "controller::cat::create", skip_all)]
 pub async fn create(
     State(ctx): State<Ctx>,
     Extension(user): Extension<AuthUser>,
-    axum::Json(request): axum::Json<CreateRequest>,
+    axum::Json(request): axum::Json<CatCreateReq>,
 ) -> Response {
     match link::cat::create(&ctx, user.user_id.as_str(), request).await {
         Ok(r) => response::success(axum::http::StatusCode::CREATED, r),
@@ -34,8 +23,12 @@ pub async fn create(
 }
 
 #[tracing::instrument(name = "controller::cat::get", skip_all)]
-pub async fn get(State(ctx): State<Ctx>, Path(cat_name): Path<String>) -> Response {
-    match link::cat::get(&ctx, cat_name.as_str()).await {
+pub async fn get(
+    State(ctx): State<Ctx>,
+    Extension(user): Extension<AuthUser>,
+    Path(cat_name): Path<String>,
+) -> Response {
+    match link::cat::get(&ctx, user.user_id.as_str(), cat_name.as_str()).await {
         Ok(r) => response::success(axum::http::StatusCode::OK, r),
         Err(e) => {
             tracing::error!("err: {:?}", e);
@@ -59,7 +52,7 @@ pub async fn list(State(ctx): State<Ctx>, Path(query): Path<CatApiQuery>) -> Res
 pub async fn update(
     State(ctx): State<Ctx>,
     Path(cat_name): Path<String>,
-    axum::Json(request): axum::Json<CreateRequest>,
+    axum::Json(request): axum::Json<CatCreateReq>,
 ) -> Response {
     match link::cat::update(&ctx, cat_name.as_str(), request).await {
         Ok(r) => response::success(axum::http::StatusCode::OK, r),

@@ -48,6 +48,7 @@ pub async fn get_by_name(
 ) -> Result<Option<crate::CatRow>, sqlx::Error> {
     let query = r#"
         select
+            id,
             name,
             display_name,
             description,
