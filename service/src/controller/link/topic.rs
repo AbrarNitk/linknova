@@ -12,7 +12,6 @@ pub struct CreateRequest {
     pub priority: Option<i32>,
     #[serde(default)]
     pub public: bool,
-    pub user: String,
 }
 
 #[tracing::instrument(name = "controller::topic::create", skip_all)]

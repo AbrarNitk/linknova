@@ -6,7 +6,7 @@ authors = ["abrar.nitk@gmail.com"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-axum = "0.8"
+axum = { version = "0.8", features = ["macros"] }
 tokio = { version = "1", features = ["full"] }
 sqlx = { version = "0.8", features = [
     "postgres",
@@ -27,3 +27,4 @@ tracing-subscriber = { workspace = true }
 tracing-forest = { workspace = true }
 chrono = { version = "0.4.31", features = ["serde"] }
 config = "0.15"
+percent-encoding = "2.3.1"
