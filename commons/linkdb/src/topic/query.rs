@@ -1,3 +1,4 @@
+use crate::TopicRowView;
 use crate::topic::types;
 use sqlx::types::chrono;
 
@@ -84,7 +85,10 @@ pub async fn list_all(pool: &sqlx::PgPool) -> Result<Vec<types::TopicRowView>, s
     sqlx::query_as(query).fetch_all(pool).await
 }
 
-async fn list_by_cat_name(pool: &sqlx::PgPool, cat_names: &[String]) -> Result<(), sqlx::Error> {
+async fn list_by_cat_name(
+    pool: &sqlx::PgPool,
+    cat_names: &[String],
+) -> Result<Vec<TopicRowView>, sqlx::Error> {
     let query = r#"
         SELECT
             topic.name,
@@ -97,9 +101,13 @@ async fn list_by_cat_name(pool: &sqlx::PgPool, cat_names: &[String]) -> Result<(
             topic.updated_on
         FROM linknova_topic as topic
         JOIN linknova_topic_category_map as mapping
-            ON
+            ON topic.id = mapping.topic_id
+        JOIN linknova_category as category
+            ON mapping.category_id = category.id
+        WHERE category.name = ANY($1)
     "#;
-    Ok(())
+
+    sqlx::query_as(query).bind(cat_names).fetch_all(pool).await
 }
 
 #[tracing::instrument(name = "linkdb::topic::delete", skip_all, err)]
