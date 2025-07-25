@@ -5,7 +5,6 @@ use axum::extract::State;
 use percent_encoding::percent_decode;
 
 pub async fn auth_user(
-    State(ctx): State<Ctx>,
     auth_user: AuthUser,
     mut req: Request,
     next: axum::middleware::Next,

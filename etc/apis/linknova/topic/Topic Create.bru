@@ -4,10 +4,15 @@ meta {
   seq: 4
 }
 
-put {
-  url: http://127.0.0.1:8000/linknova/v1/api/topic/create/
+post {
+  url: http://127.0.0.1:8000/-/link/topic
   body: json
   auth: none
+}
+
+headers {
+  secrets: secrets-key
+  ~user-id: abrark
 }
 
 body:json {
