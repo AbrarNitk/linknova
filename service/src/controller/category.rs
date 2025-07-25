@@ -12,7 +12,7 @@ pub async fn create(
     axum::extract::State(ctx): axum::extract::State<Ctx>,
     axum::Json(request): axum::Json<CreateRequest>,
 ) -> axum::response::Response {
-    match _create(&ctx.db, request).await {
+    match _create(&ctx.pg_pool, request).await {
         Ok(r) => super::success(axum::http::StatusCode::CREATED, r),
         Err(e) => {
             eprintln!("err: {:?}", e);
@@ -27,7 +27,7 @@ pub async fn create(
 pub async fn list(
     axum::extract::State(ctx): axum::extract::State<Ctx>,
 ) -> axum::response::Response {
-    match categories(&ctx.db).await {
+    match categories(&ctx.pg_pool).await {
         Ok(r) => super::success(axum::http::StatusCode::CREATED, r),
         Err(e) => {
             eprintln!("err: {:?}", e);

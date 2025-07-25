@@ -112,7 +112,7 @@ pub async fn get_urls_(
     let rows: Vec<UrlRow> = db_query
         .bind(offset)
         .bind(size + 1)
-        .fetch_all(&ctx.db)
+        .fetch_all(&ctx.pg_pool)
         .await?
         .into_iter()
         .map(|r| UrlRow {

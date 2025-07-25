@@ -1,10 +1,10 @@
-use axum::Extension;
 use crate::controller::response;
 use crate::ctx::Ctx;
+use crate::middlewares::user::AuthUser;
 use crate::services::link;
 use axum::extract::{Path, State};
 use axum::response::Response;
-use crate::middlewares::user::AuthUser;
+use axum::Extension;
 
 #[derive(serde::Deserialize)]
 pub struct CreateRequest {
@@ -12,6 +12,7 @@ pub struct CreateRequest {
     pub description: Option<String>,
     pub display_name: Option<String>,
     pub priority: Option<i32>,
+    pub about: Option<String>,
     #[serde(default)]
     pub public: bool,
 }
@@ -22,7 +23,7 @@ pub async fn create(
     Extension(user): Extension<AuthUser>,
     axum::Json(request): axum::Json<CreateRequest>,
 ) -> Response {
-    tracing::info!(msg="userid", user.user_id);
+    tracing::info!(msg = "userid", user.user_id);
     match link::topic::create(&ctx, user.user_id.as_str(), request).await {
         Ok(r) => response::success(axum::http::StatusCode::CREATED, r),
         Err(e) => {

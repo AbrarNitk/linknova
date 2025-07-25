@@ -21,11 +21,11 @@ class Topic(DateTimeBase):
     priority = models.IntegerField(default=0)
     active = models.BooleanField(default=True)
     public = models.BooleanField(default=False)
-    user = models.CharField(max_length=255)
+    user_id = models.CharField(max_length=255)
 
     class Meta:
         db_table = "linknova_topic"
-        unique_together = ("user", "name")
+        unique_together = ("user_id", "name")
 
 
 # Directory means categories/label/tags
@@ -35,7 +35,7 @@ class Category(DateTimeBase):
     description = models.CharField(max_length=1024, null=True, blank=True)
     about = models.TextField(null=True, blank=True)
     priority = models.IntegerField(default=0)
-    user = models.CharField(max_length=255)
+    user_id = models.CharField(max_length=255)
     active = models.BooleanField(default=True)
     # If public so any logged-in user can see the labeled content.
     public = models.BooleanField(default=False)
@@ -44,7 +44,7 @@ class Category(DateTimeBase):
     # TODO: Handle collaboration, for now keeping public and private concept
     class Meta:
         db_table = "linknova_category"
-        unique_together = ("user", "name")
+        unique_together = ("user_id", "name")
 
 
 # a topic can have multiple categories

@@ -7,9 +7,21 @@ use crate::ctx::Ctx;
 pub async fn create(
     ctx: &Ctx,
     user_id: &str,
-    req: link::topic::CreateRequest) -> Result<(), types::TopicError> {
-    tracing::info!(msg="userid", user_id);
+    req: link::topic::CreateRequest,
+) -> Result<(), types::TopicError> {
+    tracing::info!(msg = "userid", user_id);
 
+    let row = linkdb::topic::TopicRowI {
+        name: req.name,
+        display_name: req.display_name,
+        description: req.description,
+        about: req.about,
+        priority: req.priority.unwrap_or(0),
+        active: true,
+        public: false,
+        user_id: user_id.to_string(),
+    };
+    linkdb::topic::insert(&ctx.pg_pool, row).await?;
     Ok(())
 }
 

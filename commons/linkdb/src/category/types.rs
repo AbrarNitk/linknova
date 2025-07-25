@@ -10,7 +10,7 @@ pub struct CatRowI {
     pub priority: i32,
     pub active: bool,
     pub public: bool,
-    pub user: String,
+    pub user_id: String,
 }
 
 #[derive(Debug, FromRow)]

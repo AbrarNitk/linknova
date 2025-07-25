@@ -10,7 +10,7 @@ pub struct TopicRowI {
     pub priority: i32,
     pub active: bool,
     pub public: bool,
-    pub user: String,
+    pub user_id: String,
 }
 
 #[derive(FromRow, Debug)]

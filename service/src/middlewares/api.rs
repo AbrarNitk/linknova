@@ -3,7 +3,6 @@ use crate::ctx::Ctx;
 use axum::extract::{Request, State};
 use percent_encoding::percent_decode;
 
-
 #[tracing::instrument(name = "middleware::verify-secrets", skip_all)]
 pub async fn verify_secrets(
     State(ctx): State<Ctx>,

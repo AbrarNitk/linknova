@@ -13,7 +13,7 @@ pub async fn insert(
             priority,
             active,
             public,
-            user,
+            user_id,
             created_on,
             updated_on
         ) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
@@ -31,7 +31,7 @@ pub async fn insert(
         .bind(row.priority)
         .bind(row.active)
         .bind(row.public)
-        .bind(row.user)
+        .bind(row.user_id)
         .bind(now)
         .bind(now)
         .fetch_one(pool)
@@ -54,7 +54,7 @@ pub async fn get_by_name(
             priority,
             active,
             public,
-            user,
+            user_id,
             created_on,
             updated_on
         FROM linknova_category

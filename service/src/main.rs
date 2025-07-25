@@ -74,7 +74,7 @@ pub async fn http_main() {
         .expect("cannot bind the address");
 
     let ctx = Ctx {
-        db: pool,
+        pg_pool: pool,
         category_map: std::sync::Arc::new(std::sync::RwLock::new(categories)),
         secret: settings.service.secrets,
     };
