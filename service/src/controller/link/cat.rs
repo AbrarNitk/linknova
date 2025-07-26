@@ -86,9 +86,17 @@ pub async fn delete(
 #[tracing::instrument(name = "controller::cat::add-topic", skip_all)]
 pub async fn add_topic(
     State(ctx): State<Ctx>,
+    Extension(user): Extension<AuthUser>,
     Path((cat_name, topic_name)): Path<(String, String)>,
 ) -> Response {
-    match link::cat::add_topic(&ctx, cat_name.as_str(), topic_name.as_str()).await {
+    match link::cat::add_topic(
+        &ctx,
+        user.user_id.as_str(),
+        cat_name.as_str(),
+        topic_name.as_str(),
+    )
+    .await
+    {
         Ok(r) => response::success(axum::http::StatusCode::OK, r),
         Err(e) => {
             tracing::error!("err: {:?}", e);
@@ -100,9 +108,17 @@ pub async fn add_topic(
 #[tracing::instrument(name = "controller::cat::remove-topic", skip_all)]
 pub async fn remove_topic(
     State(ctx): State<Ctx>,
+    Extension(user): Extension<AuthUser>,
     Path((cat_name, topic_name)): Path<(String, String)>,
 ) -> Response {
-    match link::cat::remove_topic(&ctx, cat_name.as_str(), topic_name.as_str()).await {
+    match link::cat::remove_topic(
+        &ctx,
+        user.user_id.as_str(),
+        cat_name.as_str(),
+        topic_name.as_str(),
+    )
+    .await
+    {
         Ok(r) => response::success(axum::http::StatusCode::OK, r),
         Err(e) => {
             tracing::error!("err: {:?}", e);

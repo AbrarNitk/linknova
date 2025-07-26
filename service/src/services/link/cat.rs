@@ -66,27 +66,51 @@ pub async fn list(
 }
 
 #[tracing::instrument(name = "service::cat-update", skip_all)]
-pub async fn update(ctx: &Ctx, cat_name: &str, req: CatCreateReq) -> Result<(), types::CatError> {
+pub async fn update(
+    _ctx: &Ctx,
+    _cat_name: &str,
+    _req: CatCreateReq,
+) -> Result<(), types::CatError> {
     Ok(())
 }
 
 #[tracing::instrument(name = "service::cat-delete", skip_all)]
 pub async fn delete(ctx: &Ctx, user_id: &str, cat_name: &str) -> Result<(), types::CatError> {
     linkdb::category::delete(&ctx.pg_pool, user_id, cat_name).await?;
-
     Ok(())
 }
 
 #[tracing::instrument(name = "service::cat-add-topic", skip_all)]
-pub async fn add_topic(ctx: &Ctx, cat_name: &str, topic_name: &str) -> Result<(), types::CatError> {
+pub async fn add_topic(
+    ctx: &Ctx,
+    user_id: &str,
+    cat_name: &str,
+    topic_name: &str,
+) -> Result<(), types::CatError> {
+    let topic_id = linkdb::topic::get_id_by_name(&ctx.pg_pool, user_id, topic_name)
+        .await?
+        .ok_or_else(|| types::CatError::NotFound(format!("topic with name: `{}`", topic_name)))?;
+    let category_id = linkdb::category::get_id_by_name(&ctx.pg_pool, user_id, cat_name)
+        .await?
+        .ok_or_else(|| types::CatError::NotFound(format!("category with name: `{}`", cat_name)))?;
+    linkdb::topic_cat_map::connect(&ctx.pg_pool, topic_id, category_id).await?;
+
     Ok(())
 }
 
 #[tracing::instrument(name = "service::cat-remove-topic", skip_all)]
 pub async fn remove_topic(
     ctx: &Ctx,
+    user_id: &str,
     cat_name: &str,
     topic_name: &str,
 ) -> Result<(), types::CatError> {
+    let topic_id = linkdb::topic::get_id_by_name(&ctx.pg_pool, user_id, topic_name)
+        .await?
+        .ok_or_else(|| types::CatError::NotFound(format!("topic with name: `{}`", topic_name)))?;
+    let category_id = linkdb::category::get_id_by_name(&ctx.pg_pool, user_id, cat_name)
+        .await?
+        .ok_or_else(|| types::CatError::NotFound(format!("category with name: `{}`", cat_name)))?;
+    linkdb::topic_cat_map::remove(&ctx.pg_pool, topic_id, category_id).await?;
     Ok(())
 }
