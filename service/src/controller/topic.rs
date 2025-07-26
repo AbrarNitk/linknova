@@ -1,4 +1,4 @@
-use crate::router::Ctx;
+use crate::Ctx;
 use axum::extract::path::Path;
 
 #[derive(serde::Deserialize)]
@@ -12,7 +12,7 @@ pub async fn create(
     axum::extract::State(ctx): axum::extract::State<Ctx>,
     axum::Json(request): axum::Json<CreateRequest>,
 ) -> axum::response::Response {
-    match _create(&ctx.db, TopicCreate::from_req(request)).await {
+    match _create(&ctx.pg_pool, TopicCreate::from_req(request)).await {
         Ok(r) => super::success(axum::http::StatusCode::CREATED, r),
         Err(e) => {
             eprintln!("err: {:?}", e);
@@ -27,7 +27,7 @@ pub async fn create(
 pub async fn list(
     axum::extract::State(ctx): axum::extract::State<Ctx>,
 ) -> axum::response::Response {
-    match _list(&ctx.db).await {
+    match _list(&ctx.pg_pool).await {
         Ok(r) => super::success(axum::http::StatusCode::CREATED, r),
         Err(e) => {
             eprintln!("err: {:?}", e);
@@ -43,7 +43,7 @@ pub async fn get(
     axum::extract::State(ctx): axum::extract::State<Ctx>,
     Path(topic_id): Path<i64>,
 ) -> axum::response::Response {
-    match get_by_id(&ctx.db, topic_id).await {
+    match get_by_id(&ctx.pg_pool, topic_id).await {
         Ok(r) => super::success(axum::http::StatusCode::CREATED, r),
         Err(e) => {
             eprintln!("err: {:?}", e);
@@ -59,7 +59,7 @@ pub async fn get_with_name(
     axum::extract::State(ctx): axum::extract::State<Ctx>,
     Path(topic_name): Path<String>,
 ) -> axum::response::Response {
-    match get_by_name(&ctx.db, &topic_name).await {
+    match get_by_name(&ctx.pg_pool, &topic_name).await {
         Ok(r) => super::success(axum::http::StatusCode::CREATED, r),
         Err(e) => {
             eprintln!("err: {:?}", e);

@@ -1,4 +1,4 @@
-# export PYTHONPATH=${PYTHONPATH}:${PROJDIR}/dj
+ export PYTHONPATH=${PYTHONPATH}:${PROJDIR}/dj
 # export DIESEL_CONFIG_FILE=${PROJDIR}/diesel.toml
 
 DATABASE_NAME=linknova
@@ -50,10 +50,10 @@ function dbshell() {
 
 function recreatedb() {
   WHO=`whoami`
-  psql -h 127.0.0.1 -U "${WHO}" -d postgres -c "DROP ROLE IF EXISTS ${ROLE_NAME};"
-  psql -h 127.0.0.1 -U "${WHO}" -d postgres -c "CREATE ROLE ${ROLE_NAME} WITH SUPERUSER LOGIN PASSWORD '${PASSWORD}';"
-  psql -h 127.0.0.1 -U "${WHO}" -d postgres -c "DROP DATABASE IF EXISTS ${DATABASE_NAME};"
-  psql -h 127.0.0.1 -U "${WHO}" -d postgres -c "CREATE DATABASE ${DATABASE_NAME};"
+  psql -U "${WHO}" -d postgres -c "DROP ROLE IF EXISTS ${ROLE_NAME};"
+  psql -U "${WHO}" -d postgres -c "CREATE ROLE ${ROLE_NAME} WITH SUPERUSER LOGIN PASSWORD '${PASSWORD}';"
+  psql -U "${WHO}" -d postgres -c "DROP DATABASE IF EXISTS ${DATABASE_NAME};"
+  psql -U "${WHO}" -d postgres -c "CREATE DATABASE ${DATABASE_NAME};"
   migrate $*
 }
 

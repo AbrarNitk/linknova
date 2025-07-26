@@ -1,11 +1,4 @@
-pub mod category;
-pub mod get;
-pub mod save;
-pub mod topic;
-
 use axum::response::IntoResponse;
-pub use get::get_urls;
-pub use save::save_url;
 
 pub fn success<T: serde::Serialize>(
     status: axum::http::StatusCode,

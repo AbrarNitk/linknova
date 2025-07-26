@@ -1,0 +1,20 @@
+meta {
+  name: Cat-Topic Map
+  type: http
+  seq: 2
+}
+
+delete {
+  url: http://127.0.0.1:8000/-/link/cat/c5/t2
+  body: none
+  auth: inherit
+}
+
+headers {
+  user-id: abrark
+  secrets: secrets-key
+}
+
+settings {
+  encodeUrl: true
+}

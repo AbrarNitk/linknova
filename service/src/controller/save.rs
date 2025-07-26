@@ -1,4 +1,4 @@
-use crate::router::Ctx;
+use crate::Ctx;
 use sqlx::PgPool;
 
 #[derive(serde::Deserialize)]
@@ -39,7 +39,7 @@ pub struct SaveResponse {
 }
 
 async fn save_url_(ctx: &Ctx, request: &SaveRequest) -> Result<SaveResponse, SaveError> {
-    let bookmark_id = insert_into_urls(&ctx.db, request).await?;
+    let bookmark_id = insert_into_urls(&ctx.pg_pool, request).await?;
     // todo: handle topic handling properly, there can be multiple topics and categories come in the request
     // get the default topic for now
     let categories = if !request.categories.is_empty() {
@@ -49,16 +49,16 @@ async fn save_url_(ctx: &Ctx, request: &SaveRequest) -> Result<SaveResponse, Sav
             .iter()
             .map(|name| super::category::Category::new(name))
             .collect::<Vec<_>>();
-        let cats = super::category::upsert_categories(&ctx.db, &cats).await?;
+        let cats = super::category::upsert_categories(&ctx.pg_pool, &cats).await?;
         cats.into_iter()
             .map(|(_name, cat_id)| (bookmark_id, cat_id))
             .collect::<Vec<_>>()
     } else {
         // get the default category for now
-        let cat_id = super::category::get_cat_or_default(&ctx.db, "default").await?;
+        let cat_id = super::category::get_cat_or_default(&ctx.pg_pool, "default").await?;
         vec![(bookmark_id, cat_id)]
     };
-    insert_into_bookmark_cat_map(categories.as_slice(), &ctx.db).await?;
+    insert_into_bookmark_cat_map(categories.as_slice(), &ctx.pg_pool).await?;
     Ok(SaveResponse { id: bookmark_id })
 }
 

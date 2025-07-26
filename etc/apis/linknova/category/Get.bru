@@ -1,0 +1,29 @@
+meta {
+  name: Get
+  type: http
+  seq: 3
+}
+
+get {
+  url: http://127.0.0.1:8000/-/link/cat?topic=t2
+  body: json
+  auth: none
+}
+
+params:query {
+  topic: t2
+}
+
+headers {
+  secrets: secrets-key
+  user-id: abrark
+}
+
+body:json {
+  {
+    "name": "c1",
+    "description": "this contains link about",
+    "display_name": "Ui Lang",
+    "priority": 10
+  }
+}

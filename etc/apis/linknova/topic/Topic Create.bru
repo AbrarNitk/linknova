@@ -1,0 +1,26 @@
+meta {
+  name: Topic Create
+  type: http
+  seq: 4
+}
+
+get {
+  url: http://127.0.0.1:8000/-/link/topic
+  body: json
+  auth: none
+}
+
+headers {
+  secrets: secrets-key
+  user-id: abrark
+}
+
+body:json {
+  {
+    "name": "t5",
+    "description": "this contains link about",
+    "display_name": "Ui Lang",
+    "priority": 10,
+    "about": "somethings about the category"
+  }
+}

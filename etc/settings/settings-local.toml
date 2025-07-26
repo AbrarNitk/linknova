@@ -1,0 +1,3 @@
+[service]
+environment = "local"
+secrets = "secrets-key"

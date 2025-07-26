@@ -1,4 +1,4 @@
-use crate::router::Ctx;
+use crate::Ctx;
 
 #[derive(serde::Deserialize)]
 pub struct CreateRequest {
@@ -12,7 +12,7 @@ pub async fn create(
     axum::extract::State(ctx): axum::extract::State<Ctx>,
     axum::Json(request): axum::Json<CreateRequest>,
 ) -> axum::response::Response {
-    match _create(&ctx.db, request).await {
+    match _create(&ctx.pg_pool, request).await {
         Ok(r) => super::success(axum::http::StatusCode::CREATED, r),
         Err(e) => {
             eprintln!("err: {:?}", e);
@@ -27,7 +27,7 @@ pub async fn create(
 pub async fn list(
     axum::extract::State(ctx): axum::extract::State<Ctx>,
 ) -> axum::response::Response {
-    match categories(&ctx.db).await {
+    match categories(&ctx.pg_pool).await {
         Ok(r) => super::success(axum::http::StatusCode::CREATED, r),
         Err(e) => {
             eprintln!("err: {:?}", e);
@@ -170,18 +170,18 @@ pub async fn cat_topic_map(pool: &sqlx::PgPool, map: &[(i64, i64)]) -> sqlx::Res
     Ok(())
 }
 
-pub async fn refresh_categories(ctx: Ctx) -> () {
-    tracing::info!("refresing the categories");
-    loop {
-        match categories(&ctx.db).await {
-            Ok(categories) => {
-                let mut cats = ctx.category_map.write().unwrap();
-                *cats = categories;
-            }
-            Err(err) => {
-                eprintln!("refresh-category::error: {:?}", err);
-            }
-        }
-        tokio::time::sleep(std::time::Duration::from_secs(3)).await;
-    }
-}
+// pub async fn refresh_categories(ctx: Ctx) -> () {
+//     tracing::info!("refresing the categories");
+//     loop {
+//         match categories(&ctx.db).await {
+//             Ok(categories) => {
+//                 let mut cats = ctx.category_map.write().unwrap();
+//                 *cats = categories;
+//             }
+//             Err(err) => {
+//                 eprintln!("refresh-category::error: {:?}", err);
+//             }
+//         }
+//         tokio::time::sleep(std::time::Duration::from_secs(3)).await;
+//     }
+// }
