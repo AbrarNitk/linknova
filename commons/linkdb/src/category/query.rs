@@ -120,6 +120,7 @@ pub async fn list_by_topic_name(
 ) -> Result<Vec<crate::CategoryRowView>, sqlx::Error> {
     let query = r#"
         select
+            cat.id,
             cat.name,
             cat.display_name,
             cat.description,

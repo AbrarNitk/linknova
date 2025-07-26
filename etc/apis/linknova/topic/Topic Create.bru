@@ -5,13 +5,9 @@ meta {
 }
 
 get {
-  url: http://127.0.0.1:8000/-/link/cat?topic=t1
+  url: http://127.0.0.1:8000/-/link/topic
   body: json
   auth: none
-}
-
-params:query {
-  topic: t1
 }
 
 headers {
@@ -21,7 +17,7 @@ headers {
 
 body:json {
   {
-    "name": "c5",
+    "name": "t5",
     "description": "this contains link about",
     "display_name": "Ui Lang",
     "priority": 10,
