@@ -5,9 +5,13 @@ meta {
 }
 
 get {
-  url: http://127.0.0.1:8000/-/link/cat/c6
+  url: http://127.0.0.1:8000/-/link/cat?topic=t1
   body: json
   auth: none
+}
+
+params:query {
+  topic: t1
 }
 
 headers {

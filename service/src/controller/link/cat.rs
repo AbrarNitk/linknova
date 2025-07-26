@@ -3,9 +3,10 @@ use crate::controller::response;
 use crate::ctx::Ctx;
 use crate::middlewares::user::AuthUser;
 use crate::services::link;
-use axum::extract::{Path, Query, State};
+use axum::extract::{Path, State};
 use axum::response::Response;
 use axum::Extension;
+use axum_extra::extract::Query;
 
 #[tracing::instrument(name = "controller::cat::create", skip_all)]
 pub async fn create(
@@ -38,8 +39,12 @@ pub async fn get(
 }
 
 #[tracing::instrument(name = "controller::cat::list", skip_all)]
-pub async fn list(State(ctx): State<Ctx>, Path(query): Path<CatApiQuery>) -> Response {
-    match link::cat::list(&ctx, query.topic.as_slice()).await {
+pub async fn list(
+    State(ctx): State<Ctx>,
+    Extension(user): Extension<AuthUser>,
+    Query(query): Query<CatApiQuery>,
+) -> Response {
+    match link::cat::list(&ctx, user.user_id.as_str(), query.topic.as_slice()).await {
         Ok(r) => response::success(axum::http::StatusCode::OK, r),
         Err(e) => {
             tracing::error!("err: {:?}", e);

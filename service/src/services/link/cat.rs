@@ -38,8 +38,31 @@ pub async fn get(ctx: &Ctx, user_id: &str, cat_name: &str) -> Result<CatGetRes, 
 }
 
 #[tracing::instrument(name = "service::cat-list", skip_all)]
-pub async fn list(ctx: &Ctx, topics: &[String]) -> Result<(), types::CatError> {
-    Ok(())
+pub async fn list(
+    ctx: &Ctx,
+    user_id: &str,
+    topics: &[String],
+) -> Result<Vec<CatGetRes>, types::CatError> {
+    tracing::info!(msg="topics", t=?topics);
+
+    let cat_rows = if topics.is_empty() {
+        linkdb::category::list_all(&ctx.pg_pool, user_id).await?
+    } else {
+        linkdb::category::list_by_topic_name(&ctx.pg_pool, user_id, topics).await?
+    };
+    Ok(cat_rows
+        .into_iter()
+        .map(|cat_row| CatGetRes {
+            name: cat_row.name,
+            display_name: cat_row.display_name,
+            about: None,
+            description: cat_row.description,
+            public: cat_row.public,
+            priority: cat_row.priority,
+            created_on: cat_row.created_on,
+            updated_on: cat_row.updated_on,
+        })
+        .collect())
 }
 
 #[tracing::instrument(name = "service::cat-update", skip_all)]

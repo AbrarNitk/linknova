@@ -92,10 +92,11 @@ pub async fn get_id_by_name(
 #[tracing::instrument(name = "linkdb::category::list-all", skip_all, err)]
 pub async fn list_all(
     pool: &sqlx::PgPool,
-    name: &str,
+    user_id: &str,
 ) -> Result<Vec<crate::CategoryRowView>, sqlx::Error> {
     let query = r#"
         select
+            id,
             name,
             display_name,
             description,
@@ -105,13 +106,16 @@ pub async fn list_all(
             created_on,
             updated_on
         FROM linknova_category
+        WHERE user_id = $1
     "#;
 
-    sqlx::query_as(query).bind(name).fetch_all(pool).await
+    sqlx::query_as(query).bind(user_id).fetch_all(pool).await
 }
 
+#[tracing::instrument(name = "linkdb::category::list-by-topic-name", skip_all, err)]
 pub async fn list_by_topic_name(
     pool: &sqlx::PgPool,
+    user_id: &str,
     topic_names: &[String],
 ) -> Result<Vec<crate::CategoryRowView>, sqlx::Error> {
     let query = r#"
@@ -129,11 +133,16 @@ pub async fn list_by_topic_name(
             ON cat.id = mapping.category_id
         JOIN linknova_topic as topic
             ON mapping.topic_id = topic.id
-        WHERE topic.name = ANY($1)
+        WHERE
+            topic.name = ANY($1) AND
+            topic.user_id = $2 AND
+            cat.user_id = $3
     "#;
 
     sqlx::query_as(query)
         .bind(topic_names)
+        .bind(user_id)
+        .bind(user_id)
         .fetch_all(pool)
         .await
 }
