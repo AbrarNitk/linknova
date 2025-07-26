@@ -71,7 +71,9 @@ pub async fn update(ctx: &Ctx, cat_name: &str, req: CatCreateReq) -> Result<(), 
 }
 
 #[tracing::instrument(name = "service::cat-delete", skip_all)]
-pub async fn delete(ctx: &Ctx, cat_name: &str) -> Result<(), types::CatError> {
+pub async fn delete(ctx: &Ctx, user_id: &str, cat_name: &str) -> Result<(), types::CatError> {
+    linkdb::category::delete(&ctx.pg_pool, user_id, cat_name).await?;
+
     Ok(())
 }
 

@@ -69,8 +69,12 @@ pub async fn update(
 }
 
 #[tracing::instrument(name = "controller::cat::delete", skip_all)]
-pub async fn delete(State(ctx): State<Ctx>, Path(cat_name): Path<String>) -> Response {
-    match link::cat::delete(&ctx, cat_name.as_str()).await {
+pub async fn delete(
+    State(ctx): State<Ctx>,
+    Extension(user): Extension<AuthUser>,
+    Path(cat_name): Path<String>,
+) -> Response {
+    match link::cat::delete(&ctx, user.user_id.as_str(), cat_name.as_str()).await {
         Ok(r) => response::success(axum::http::StatusCode::OK, r),
         Err(e) => {
             tracing::error!("err: {:?}", e);

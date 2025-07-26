@@ -148,10 +148,14 @@ pub async fn list_by_topic_name(
 }
 
 #[tracing::instrument(name = "linkdb::topic::delete", skip_all, err)]
-pub async fn delete(pool: &sqlx::PgPool, name: &str) -> Result<(), sqlx::Error> {
+pub async fn delete(pool: &sqlx::PgPool, user_id: &str, cat_name: &str) -> Result<(), sqlx::Error> {
     let query = r#"
-        DELETE FROM linknova_category WHERE name = $1 returning id
+        DELETE FROM linknova_category WHERE name = $1 and user_id = $2 returning id
     "#;
-    let (_id,): (i64,) = sqlx::query_as(query).bind(name).fetch_one(pool).await?;
+    let (_id,): (i64,) = sqlx::query_as(query)
+        .bind(cat_name)
+        .bind(user_id)
+        .fetch_one(pool)
+        .await?;
     Ok(())
 }
