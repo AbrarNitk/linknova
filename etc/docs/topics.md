@@ -50,3 +50,8 @@ There will be an un-managed topic per user.
 
 - DELETE /links/-/topic/{name}
 
+
+### Add category to a topic 
+
+### Remove a category from topic
+
