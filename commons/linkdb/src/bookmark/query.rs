@@ -51,3 +51,24 @@ pub async fn get_by_id(pool: &sqlx::PgPool, id: i64) -> Result<BookmarkRow, sqlx
     let row = sqlx::query_as(query).bind(id).fetch_one(pool).await?;
     Ok(row)
 }
+
+#[tracing::instrument(name = "linkdb::bookmark::filter", skip_all, err)]
+pub async fn filter(pool: &sqlx::PgPool, user_id: &str) -> Result<Vec<BookmarkRow>, sqlx::Error> {
+    let query = r#"
+        SELECT
+            id,
+            url,
+            user_id,
+            title,
+            content,
+            referrer,
+            status,
+            created_on,
+            updated_on
+        FROM linknova_bookmark
+        WHERE user_id = $1
+    "#;
+
+    let row = sqlx::query_as(query).bind(user_id).fetch_all(pool).await?;
+    Ok(row)
+}

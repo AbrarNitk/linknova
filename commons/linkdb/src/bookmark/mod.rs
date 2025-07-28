@@ -4,4 +4,4 @@ pub mod types;
 
 pub use types::{BookmarkI, BookmarkRow};
 
-pub use query::{get_by_id, insert};
+pub use query::{filter, get_by_id, insert};
