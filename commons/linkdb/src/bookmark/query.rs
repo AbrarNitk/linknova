@@ -1,7 +1,7 @@
 use crate::bookmark::{BookmarkI, BookmarkView};
 
 #[tracing::instrument(name = "linkdb::bookmark::insert", skip_all, err)]
-pub async fn insert(pool: &sqlx::PgPool, row: BookmarkI) -> Result<i64, sqlx::Error> {
+pub async fn insert(tx: &mut sqlx::PgTransaction<'_>, row: BookmarkI) -> Result<i64, sqlx::Error> {
     let query = r#"
         INSERT INTO linknova_bookmark(
             url,
@@ -25,7 +25,7 @@ pub async fn insert(pool: &sqlx::PgPool, row: BookmarkI) -> Result<i64, sqlx::Er
         .bind(row.status)
         .bind(row.created_on)
         .bind(row.updated_on)
-        .fetch_one(pool)
+        .fetch_one(&mut **tx)
         .await?;
 
     Ok(id)

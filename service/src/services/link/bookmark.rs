@@ -21,8 +21,13 @@ pub async fn create(
 
     // todo: must happen in the transaction
     // now upsert both categories and bookmarks
-    linkdb::category::upsert(&ctx.pg_pool, categories, now).await?;
-    linkdb::bookmark::insert(&ctx.pg_pool, row).await?;
+
+    let mut tx = ctx.pg_pool.begin().await?;
+
+    linkdb::category::upsert(&mut tx, categories, now).await?;
+    linkdb::bookmark::insert(&mut tx, row).await?;
+
+    tx.commit().await?;
     Ok(())
 }
 

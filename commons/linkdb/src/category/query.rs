@@ -9,7 +9,7 @@ ON CONFLICT (col1) DO NOTHING;
 
 #[tracing::instrument(name = "linkdb::category::upsert", skip_all, err)]
 pub async fn upsert(
-    pool: &sqlx::PgPool,
+    tx: &mut sqlx::PgTransaction<'_>,
     rows: Vec<crate::CatRowI>,
     now: chrono::DateTime<chrono::Utc>,
 ) -> Result<(), sqlx::Error> {
@@ -79,7 +79,7 @@ pub async fn upsert(
         .bind(user_id)
         .bind(now)
         .bind(now)
-        .execute(pool)
+        .execute(&mut **tx)
         .await?;
 
     Ok(())
