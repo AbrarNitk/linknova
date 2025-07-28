@@ -9,17 +9,38 @@ pub async fn create(
     user_id: &str,
     req: BmCreateReq,
 ) -> Result<(), types::BookmarkError> {
-    // let row = linkdb::category::CatRowI {
-    //     name: req.name,
-    //     display_name: req.display_name,
-    //     description: req.description,
-    //     about: req.about,
-    //     priority: 0,
-    //     active: true,
-    //     public: req.public,
-    //     user_id: user_id.to_string(),
-    // };
-    // linkdb::category::insert(&ctx.pg_pool, row).await?;
+    let now = chrono::Utc::now();
+
+    // first upsert the category
+    let categories: Vec<_> = req
+        .categories
+        .iter()
+        .map(|c| super::cat::types::from_cat_name(c, user_id))
+        .collect();
+    let row = types::from_req(req, user_id, now);
+
+    // todo: must happen in the transaction
+    // now upsert both categories and bookmarks
+    linkdb::category::upsert(&ctx.pg_pool, categories, now).await?;
+    linkdb::bookmark::insert(&ctx.pg_pool, row).await?;
+    Ok(())
+}
+
+pub async fn add_category(
+    ctx: &Ctx,
+    user_id: &str,
+    id: i64,
+    cat_name: &str,
+) -> Result<(), types::BookmarkError> {
+    Ok(())
+}
+
+pub async fn remove_category(
+    ctx: &Ctx,
+    user_id: &str,
+    id: i64,
+    cat_name: &str,
+) -> Result<(), types::BookmarkError> {
     Ok(())
 }
 

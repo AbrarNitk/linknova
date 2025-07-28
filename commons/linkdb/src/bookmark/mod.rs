@@ -1,4 +1,6 @@
 pub mod query;
 pub mod types;
 
-pub use crate::bookmark::types::{BookmarkI, BookmarkView};
+pub use types::{BookmarkI, BookmarkView};
+
+pub use query::insert;

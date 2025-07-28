@@ -37,5 +37,9 @@ pub async fn router<S>(ctx: crate::ctx::Ctx) -> axum::Router<S> {
                     routing::delete(link::cat::remove_topic),
                 ),
         )
+        .nest(
+            "/-/link",
+            axum::Router::new().route("/bm", routing::post(link::bookmark::create)),
+        )
         .with_state(ctx)
 }

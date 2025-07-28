@@ -5,6 +5,7 @@ pub struct BmCreateReq {
     pub content: Option<String>,
     pub referrer: Option<String>,
     pub status: Option<String>,
+    pub categories: Vec<String>,
 }
 
 #[derive(serde::Deserialize, Debug)]
