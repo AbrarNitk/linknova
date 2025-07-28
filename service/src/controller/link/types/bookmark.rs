@@ -9,6 +9,7 @@ pub struct BmCreateReq {
 
 #[derive(serde::Deserialize, Debug)]
 pub struct BmUpdateReq {
+    pub id: i64,
     pub title: Option<String>,
     pub url: Option<String>,
     pub content: Option<String>,
