@@ -12,8 +12,9 @@ pub struct BookmarkI {
     pub updated_on: chrono::DateTime<chrono::Utc>,
 }
 
-#[derive(Debug)]
-pub struct BookmarkView {
+#[derive(Debug, sqlx::FromRow)]
+pub struct BookmarkRow {
+    pub id: i64,
     pub url: String,
     pub user_id: String,
     pub title: Option<String>,

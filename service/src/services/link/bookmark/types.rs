@@ -1,4 +1,5 @@
 use crate::controller::link::types;
+use linkdb::bookmark::BookmarkRow;
 
 #[derive(thiserror::Error, Debug)]
 pub enum BookmarkError {
@@ -22,5 +23,18 @@ pub fn from_req(
         status: req.status.unwrap_or_else(|| "UN".to_string()),
         created_on: now,
         updated_on: now,
+    }
+}
+
+pub fn from_db_response(row: BookmarkRow) -> types::BmResponse {
+    types::BmResponse {
+        id: row.id,
+        url: row.url,
+        title: row.title,
+        content: row.content,
+        referrer: row.referrer,
+        status: row.status,
+        created_on: row.created_on,
+        updated_on: row.updated_on,
     }
 }

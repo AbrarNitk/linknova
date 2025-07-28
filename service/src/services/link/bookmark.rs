@@ -19,39 +19,18 @@ pub async fn create(
         .collect();
     let row = types::from_req(req, user_id, now);
 
-    // todo: must happen in the transaction
-    // now upsert both categories and bookmarks
-
     let mut tx = ctx.pg_pool.begin().await?;
-
     linkdb::category::upsert(&mut tx, categories, now).await?;
     linkdb::bookmark::insert(&mut tx, row).await?;
-
     tx.commit().await?;
-    Ok(())
-}
-
-pub async fn add_category(
-    ctx: &Ctx,
-    user_id: &str,
-    id: i64,
-    cat_name: &str,
-) -> Result<(), types::BookmarkError> {
-    Ok(())
-}
-
-pub async fn remove_category(
-    ctx: &Ctx,
-    user_id: &str,
-    id: i64,
-    cat_name: &str,
-) -> Result<(), types::BookmarkError> {
     Ok(())
 }
 
 #[tracing::instrument(name = "service::bookmark-get", skip_all)]
 pub async fn get(ctx: &Ctx, id: i64) -> Result<BmResponse, types::BookmarkError> {
-    todo!()
+    let row = linkdb::bookmark::get_by_id(&ctx.pg_pool, id).await?;
+    let result = types::from_db_response(row);
+    Ok(result)
 }
 
 #[tracing::instrument(name = "service::bookmark-list", skip_all)]
@@ -70,5 +49,23 @@ pub async fn update(
 
 #[tracing::instrument(name = "service::bookmark-delete", skip_all)]
 pub async fn delete(ctx: &Ctx, user_id: &str, id: i64) -> Result<(), types::BookmarkError> {
+    Ok(())
+}
+
+pub async fn add_category(
+    ctx: &Ctx,
+    user_id: &str,
+    id: i64,
+    cat_name: &str,
+) -> Result<(), types::BookmarkError> {
+    Ok(())
+}
+
+pub async fn remove_category(
+    ctx: &Ctx,
+    user_id: &str,
+    id: i64,
+    cat_name: &str,
+) -> Result<(), types::BookmarkError> {
     Ok(())
 }

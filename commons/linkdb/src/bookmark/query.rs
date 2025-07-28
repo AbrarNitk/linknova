@@ -1,4 +1,4 @@
-use crate::bookmark::{BookmarkI, BookmarkView};
+use crate::bookmark::{BookmarkI, BookmarkRow};
 
 #[tracing::instrument(name = "linkdb::bookmark::insert", skip_all, err)]
 pub async fn insert(tx: &mut sqlx::PgTransaction<'_>, row: BookmarkI) -> Result<i64, sqlx::Error> {
@@ -29,4 +29,25 @@ pub async fn insert(tx: &mut sqlx::PgTransaction<'_>, row: BookmarkI) -> Result<
         .await?;
 
     Ok(id)
+}
+
+#[tracing::instrument(name = "linkdb::bookmark::get", skip_all, err)]
+pub async fn get_by_id(pool: &sqlx::PgPool, id: i64) -> Result<BookmarkRow, sqlx::Error> {
+    let query = r#"
+        SELECT
+            id,
+            url,
+            user_id,
+            title,
+            content,
+            referrer,
+            status,
+            created_on,
+            updated_on
+        FROM linknova_bookmark
+        WHERE id = $1
+    "#;
+
+    let row = sqlx::query_as(query).bind(id).fetch_one(pool).await?;
+    Ok(row)
 }

@@ -39,7 +39,9 @@ pub async fn router<S>(ctx: crate::ctx::Ctx) -> axum::Router<S> {
         )
         .nest(
             "/-/link",
-            axum::Router::new().route("/bm", routing::post(link::bookmark::create)),
+            axum::Router::new()
+                .route("/bm", routing::post(link::bookmark::create))
+                .route("/bm/{id}", routing::get(link::bookmark::get)),
         )
         .with_state(ctx)
 }
