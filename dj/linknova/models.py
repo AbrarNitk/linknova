@@ -73,8 +73,6 @@ class Bookmark(DateTimeBase):
         db_table = "linknova_bookmark"
 
 
-#
-#
 # a bookmark can belongs to multiple categories
 class BookmarkCategoryMapping(models.Model):
     bookmark = models.ForeignKey(Bookmark, on_delete=models.CASCADE)
