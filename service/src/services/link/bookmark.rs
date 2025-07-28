@@ -19,9 +19,11 @@ pub async fn create(
         .collect();
     let row = types::from_req(req, user_id, now);
 
+    // todo: create links between category and bookmark
     let mut tx = ctx.pg_pool.begin().await?;
-    linkdb::category::upsert(&mut tx, categories, now).await?;
-    linkdb::bookmark::insert(&mut tx, row).await?;
+    let category_ids = linkdb::category::upsert(&mut tx, categories, now).await?;
+    let bm_id = linkdb::bookmark::insert(&mut tx, row).await?;
+    linkdb::bookmark::cat_map::add_categories(&mut tx, bm_id, category_ids.as_slice()).await?;
     tx.commit().await?;
     Ok(())
 }

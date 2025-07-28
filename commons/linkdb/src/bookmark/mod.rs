@@ -1,3 +1,4 @@
+pub mod cat_map;
 pub mod query;
 pub mod types;
 

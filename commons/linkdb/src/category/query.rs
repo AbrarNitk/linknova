@@ -12,7 +12,7 @@ pub async fn upsert(
     tx: &mut sqlx::PgTransaction<'_>,
     rows: Vec<crate::CatRowI>,
     now: chrono::DateTime<chrono::Utc>,
-) -> Result<(), sqlx::Error> {
+) -> Result<Vec<i64>, sqlx::Error> {
     let names: Vec<_> = rows.iter().map(|r| &r.name).collect();
     let display_name: Vec<_> = rows.iter().map(|r| &r.display_name).collect();
     let description: Vec<_> = rows.iter().map(|r| &r.description).collect();
@@ -23,6 +23,7 @@ pub async fn upsert(
     let user_id: Vec<_> = rows.iter().map(|r| &r.user_id).collect();
 
     let query = r#"
+    WITH ins AS (
         INSERT INTO linknova_category (
             name,
             display_name,
@@ -65,10 +66,23 @@ pub async fn upsert(
             public,
             user_id
         )
-        ON CONFLICT (name, user_id) DO NOTHING;
+        ON CONFLICT (name, user_id) DO NOTHING
+    )
+
+    SELECT lc.id, lc.name, lc.user_id
+    FROM linknova_category lc
+    JOIN (
+        SELECT unnest($1::text[]) AS name, unnest($8::text[]) AS user_id
+    ) AS input_keys
+    ON lc.name = input_keys.name AND lc.user_id = input_keys.user_id
     "#;
 
-    sqlx::query(query)
+    #[derive(sqlx::FromRow, Debug)]
+    struct TempCat {
+        id: i64,
+    }
+
+    let categories: Vec<TempCat> = sqlx::query_as(query)
         .bind(names)
         .bind(display_name)
         .bind(description)
@@ -79,10 +93,10 @@ pub async fn upsert(
         .bind(user_id)
         .bind(now)
         .bind(now)
-        .execute(&mut **tx)
+        .fetch_all(&mut **tx)
         .await?;
 
-    Ok(())
+    Ok(categories.into_iter().map(|c| c.id).collect())
 }
 
 #[tracing::instrument(name = "linkdb::category::insert", skip_all, err)]
