@@ -8,16 +8,6 @@ pub struct BmCreateReq {
     pub categories: Vec<String>,
 }
 
-#[derive(serde::Deserialize, Debug)]
-pub struct BmUpdateReq {
-    pub id: i64,
-    pub title: Option<String>,
-    pub url: Option<String>,
-    pub content: Option<String>,
-    pub referrer: Option<String>,
-    pub status: Option<String>,
-}
-
 #[derive(serde::Serialize, Debug)]
 pub struct BmResponse {
     pub id: i64,
@@ -28,4 +18,14 @@ pub struct BmResponse {
     pub status: String,
     pub created_on: chrono::DateTime<chrono::Utc>,
     pub updated_on: chrono::DateTime<chrono::Utc>,
+}
+
+#[derive(serde::Deserialize, Debug)]
+pub struct AddCategories {
+    pub categories: Vec<String>,
+}
+
+#[derive(serde::Deserialize, Debug)]
+pub struct RemoveCategories {
+    pub categories: Vec<String>,
 }

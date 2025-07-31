@@ -42,7 +42,13 @@ pub async fn router<S>(ctx: crate::ctx::Ctx) -> axum::Router<S> {
             axum::Router::new()
                 .route("/bm", routing::post(link::bookmark::create))
                 .route("/bm/{id}", routing::get(link::bookmark::get))
-                .route("/bm", routing::get(link::bookmark::list)),
+                .route("/bm", routing::get(link::bookmark::list))
+                .route("/bm/{id}", routing::delete(link::bookmark::delete))
+                .route("/bm/{id}", routing::put(link::bookmark::add_categories))
+                .route(
+                    "/bm/{id}",
+                    routing::delete(link::bookmark::remove_categories),
+                ),
         )
         .with_state(ctx)
 }

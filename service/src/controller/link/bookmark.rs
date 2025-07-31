@@ -42,13 +42,13 @@ pub async fn list(State(ctx): State<Ctx>, Extension(user): Extension<AuthUser>) 
     }
 }
 
-#[tracing::instrument(name = "controller::bookmark::udpate", skip_all)]
-pub async fn update(
+#[tracing::instrument(name = "controller::bookmark::delete", skip_all)]
+pub async fn delete(
     State(ctx): State<Ctx>,
     Extension(user): Extension<AuthUser>,
-    axum::Json(request): axum::Json<types::BmUpdateReq>,
+    Path(id): Path<i64>,
 ) -> Response {
-    match link::bookmark::update(&ctx, user.user_id.as_str(), request).await {
+    match link::bookmark::delete(&ctx, user.user_id.as_str(), id).await {
         Ok(r) => response::success(axum::http::StatusCode::OK, r),
         Err(e) => {
             tracing::error!("err: {:?}", e);
@@ -57,12 +57,39 @@ pub async fn update(
     }
 }
 
-pub async fn delete(
+#[tracing::instrument(name = "controller::bookmark::add-categories", skip_all)]
+pub async fn add_categories(
     State(ctx): State<Ctx>,
     Extension(user): Extension<AuthUser>,
     Path(id): Path<i64>,
+    axum::Json(req): axum::Json<types::AddCategories>,
 ) -> Response {
-    match link::bookmark::delete(&ctx, user.user_id.as_str(), id).await {
+    match link::bookmark::add_categories(&ctx, user.user_id.as_str(), id, req.categories.as_slice())
+        .await
+    {
+        Ok(r) => response::success(axum::http::StatusCode::OK, r),
+        Err(e) => {
+            tracing::error!("err: {:?}", e);
+            response::error(axum::http::StatusCode::INTERNAL_SERVER_ERROR, e.to_string())
+        }
+    }
+}
+
+#[tracing::instrument(name = "controller::bookmark::remove-categories", skip_all)]
+pub async fn remove_categories(
+    State(ctx): State<Ctx>,
+    Extension(user): Extension<AuthUser>,
+    Path(bm_id): Path<i64>,
+    axum::Json(req): axum::Json<types::AddCategories>,
+) -> Response {
+    match link::bookmark::remove_category(
+        &ctx,
+        user.user_id.as_str(),
+        bm_id,
+        req.categories.as_slice(),
+    )
+    .await
+    {
         Ok(r) => response::success(axum::http::StatusCode::OK, r),
         Err(e) => {
             tracing::error!("err: {:?}", e);

@@ -1,6 +1,6 @@
 mod types;
 
-use crate::controller::link::types::{BmCreateReq, BmResponse, BmUpdateReq};
+use crate::controller::link::types::{BmCreateReq, BmResponse};
 use crate::ctx::Ctx;
 
 #[tracing::instrument(name = "service::bookmark-create", skip_all)]
@@ -35,6 +35,8 @@ pub async fn get(ctx: &Ctx, id: i64) -> Result<BmResponse, types::BookmarkError>
     Ok(result)
 }
 
+// todo: pagination,
+// list by topic and category
 #[tracing::instrument(name = "service::bookmark-list", skip_all)]
 pub async fn list(ctx: &Ctx, user_id: &str) -> Result<Vec<BmResponse>, types::BookmarkError> {
     let rows = linkdb::bookmark::filter(&ctx.pg_pool, user_id).await?;
@@ -44,34 +46,45 @@ pub async fn list(ctx: &Ctx, user_id: &str) -> Result<Vec<BmResponse>, types::Bo
         .collect())
 }
 
-#[tracing::instrument(name = "service::bookmark-update", skip_all)]
-pub async fn update(
-    ctx: &Ctx,
-    user_id: &str,
-    req: BmUpdateReq,
-) -> Result<(), types::BookmarkError> {
-    Ok(())
-}
-
 #[tracing::instrument(name = "service::bookmark-delete", skip_all)]
-pub async fn delete(ctx: &Ctx, user_id: &str, id: i64) -> Result<(), types::BookmarkError> {
+pub async fn delete(ctx: &Ctx, _user_id: &str, bm_id: i64) -> Result<(), types::BookmarkError> {
+    let mut tx = ctx.pg_pool.begin().await?;
+
+    linkdb::bookmark::query::delete_by_id(&mut tx, bm_id).await?;
+    linkdb::bookmark::cat_map::delete_by_bookmark_id(&mut tx, bm_id).await?;
+    tx.commit().await?;
     Ok(())
 }
 
-pub async fn add_category(
+#[tracing::instrument(name = "service::bookmark-add-categories", skip_all)]
+pub async fn add_categories(
     ctx: &Ctx,
     user_id: &str,
-    id: i64,
-    cat_name: &str,
+    bm_id: i64,
+    categories: &[String],
 ) -> Result<(), types::BookmarkError> {
+    // first upsert the category
+    let categories: Vec<_> = categories
+        .iter()
+        .map(|c| super::cat::types::from_cat_name(c, user_id))
+        .collect();
+
+    let mut tx = ctx.pg_pool.begin().await?;
+    let now = chrono::Utc::now();
+    let category_ids = linkdb::category::upsert(&mut tx, categories, now).await?;
+    linkdb::bookmark::cat_map::add_categories(&mut tx, bm_id, category_ids.as_slice()).await?;
+    tx.commit().await?;
+
     Ok(())
 }
 
+#[tracing::instrument(name = "service::bookmark-remove-categories", skip_all)]
 pub async fn remove_category(
     ctx: &Ctx,
-    user_id: &str,
-    id: i64,
-    cat_name: &str,
+    _user_id: &str,
+    bm_id: i64,
+    categories: &[String],
 ) -> Result<(), types::BookmarkError> {
+    linkdb::bookmark::cat_map::remove_categories(&ctx.pg_pool, bm_id, categories).await?;
     Ok(())
 }

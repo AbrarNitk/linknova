@@ -102,6 +102,6 @@ pub async fn remove_topic(
     let category_id = linkdb::category::get_id_by_name(&ctx.pg_pool, user_id, cat_name)
         .await?
         .ok_or_else(|| types::CatError::NotFound(format!("category with name: `{}`", cat_name)))?;
-    linkdb::topic_cat_map::remove(&ctx.pg_pool, topic_id, category_id).await?;
+    linkdb::topic_cat_map::delete(&ctx.pg_pool, topic_id, category_id).await?;
     Ok(())
 }

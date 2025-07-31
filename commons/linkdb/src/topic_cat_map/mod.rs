@@ -1,3 +1,3 @@
 pub mod query;
 
-pub use query::{connect, remove};
+pub use query::{connect, delete};

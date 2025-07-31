@@ -72,3 +72,11 @@ pub async fn filter(pool: &sqlx::PgPool, user_id: &str) -> Result<Vec<BookmarkRo
     let row = sqlx::query_as(query).bind(user_id).fetch_all(pool).await?;
     Ok(row)
 }
+
+pub async fn delete_by_id(tx: &mut sqlx::PgTransaction<'_>, id: i64) -> Result<(), sqlx::Error> {
+    sqlx::query("DELETE FROM linknova_bookmark WHERE id = $1")
+        .bind(id)
+        .execute(&mut **tx)
+        .await?;
+    Ok(())
+}
