@@ -38,8 +38,13 @@ pub async fn get(ctx: &Ctx, id: i64) -> Result<BmResponse, types::BookmarkError>
 // todo: pagination,
 // list by topic and category
 #[tracing::instrument(name = "service::bookmark-list", skip_all)]
-pub async fn list(ctx: &Ctx, user_id: &str) -> Result<Vec<BmResponse>, types::BookmarkError> {
-    let rows = linkdb::bookmark::filter(&ctx.pg_pool, user_id).await?;
+pub async fn list(
+    ctx: &Ctx,
+    user_id: &str,
+    categories: &[String],
+    status: &Option<String>,
+) -> Result<Vec<BmResponse>, types::BookmarkError> {
+    let rows = linkdb::bookmark::filter(&ctx.pg_pool, user_id, Some(categories), status).await?;
     Ok(rows
         .into_iter()
         .map(|r| types::from_db_response(r))

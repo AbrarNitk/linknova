@@ -60,8 +60,16 @@ pub async fn get_by_id(pool: &sqlx::PgPool, id: i64) -> Result<BookmarkRow, sqlx
 }
 
 #[tracing::instrument(name = "linkdb::bookmark::filter", skip_all, err)]
-pub async fn filter(pool: &sqlx::PgPool, user_id: &str) -> Result<Vec<BookmarkRow>, sqlx::Error> {
-    let query = r#"
+pub async fn filter(
+    pool: &sqlx::PgPool,
+    user_id: &str,
+    categories: Option<&[String]>,
+    status: &Option<String>,
+) -> Result<Vec<BookmarkRow>, sqlx::Error> {
+    dbg!(status);
+
+    let mut qb = sqlx::query_builder::QueryBuilder::new(
+        r#"
         SELECT
             b.id,
             b.url,
@@ -80,11 +88,31 @@ pub async fn filter(pool: &sqlx::PgPool, user_id: &str) -> Result<Vec<BookmarkRo
         FROM linknova_bookmark as b
         LEFT JOIN linknova_bookmark_category_map as mapping ON b.id = mapping.bookmark_id
         LEFT JOIN linknova_category as cat ON mapping.category_id = cat.id
-        WHERE b.user_id = $1
-        GROUP by b.id
-    "#;
+        WHERE
+    "#,
+    );
 
-    let row = sqlx::query_as(query).bind(user_id).fetch_all(pool).await?;
+    qb.push(" b.user_id = ");
+    qb.push_bind(user_id);
+
+    if let Some(categories) = categories {
+        if !categories.is_empty() {
+            qb.push(" AND cat.name = ANY(");
+            qb.push_bind(categories);
+            qb.push(')');
+        }
+    }
+
+    if let Some(status) = status {
+        qb.push(" AND b.status = ");
+        qb.push_bind(status);
+    }
+
+    qb.push(" GROUP by b.id");
+
+    dbg!(qb.sql());
+
+    let row = qb.build_query_as().fetch_all(pool).await?;
     Ok(row)
 }
 

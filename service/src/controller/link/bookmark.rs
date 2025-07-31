@@ -4,6 +4,7 @@ use crate::{controller::link::types, controller::response, services::link};
 use axum::extract::{Path, State};
 use axum::response::Response;
 use axum::Extension;
+use axum_extra::extract::Query;
 
 #[tracing::instrument(name = "controller::bookmark::create", skip_all)]
 pub async fn create(
@@ -31,9 +32,27 @@ pub async fn get(State(ctx): State<Ctx>, Path(id): Path<i64>) -> Response {
     }
 }
 
+#[derive(serde::Deserialize)]
+pub struct ListQueryParams {
+    status: Option<String>,
+    #[serde(default)]
+    category: Vec<String>,
+}
+
 #[tracing::instrument(name = "controller::bookmark::list", skip_all)]
-pub async fn list(State(ctx): State<Ctx>, Extension(user): Extension<AuthUser>) -> Response {
-    match link::bookmark::list(&ctx, user.user_id.as_str()).await {
+pub async fn list(
+    State(ctx): State<Ctx>,
+    Extension(user): Extension<AuthUser>,
+    Query(q): Query<ListQueryParams>,
+) -> Response {
+    match link::bookmark::list(
+        &ctx,
+        user.user_id.as_str(),
+        q.category.as_slice(),
+        &q.status,
+    )
+    .await
+    {
         Ok(r) => response::success(axum::http::StatusCode::OK, r),
         Err(e) => {
             tracing::error!("err: {:?}", e);

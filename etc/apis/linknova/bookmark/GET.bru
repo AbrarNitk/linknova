@@ -5,9 +5,13 @@ meta {
 }
 
 get {
-  url: http://127.0.0.1:8000/-/link/bm/3
+  url: http://127.0.0.1:8000/-/link/bm?status=RE
   body: json
   auth: inherit
+}
+
+params:query {
+  status: RE
 }
 
 headers {
@@ -18,6 +22,7 @@ headers {
 body:json {
   {
     "url": "http://abrark.com/os/path1",
+    "status": "RE",
     "categories": ["c1", "c2", "c7", "c6", "dddd"]
   }
 }
