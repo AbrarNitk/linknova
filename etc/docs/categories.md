@@ -59,3 +59,10 @@ topic.
 ### Delete Topic
 
 - DELETE /links/-/topic/{name}
+
+
+### Add a category to topic
+
+
+### Remove a category from topic
+

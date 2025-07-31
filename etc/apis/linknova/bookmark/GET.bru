@@ -1,0 +1,32 @@
+meta {
+  name: GET
+  type: http
+  seq: 2
+}
+
+get {
+  url: http://127.0.0.1:8000/-/link/bm?topic=t1
+  body: json
+  auth: inherit
+}
+
+params:query {
+  topic: t1
+}
+
+headers {
+  secrets: secrets-key
+  user-id: abrark
+}
+
+body:json {
+  {
+    "url": "http://abrark.com/os/path1",
+    "status": "RE",
+    "categories": ["c1", "c2", "c7", "c6", "dddd"]
+  }
+}
+
+settings {
+  encodeUrl: true
+}

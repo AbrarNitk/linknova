@@ -1,3 +1,4 @@
+#[tracing::instrument(name = "linkdb::connect-topic-category")]
 pub async fn connect(
     pool: &sqlx::PgPool,
     topic_id: i64,
@@ -18,7 +19,8 @@ pub async fn connect(
     Ok(())
 }
 
-pub async fn remove(
+#[tracing::instrument(name = "linkdb::topic-cat-map::remove")]
+pub async fn delete(
     pool: &sqlx::PgPool,
     topic_id: i64,
     category_id: i64,

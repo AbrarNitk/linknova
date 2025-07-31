@@ -123,7 +123,7 @@ pub async fn remove_category(
             types::TopicError::NotFound(format!("category with name: `{}`", cat_name))
         })?;
 
-    linkdb::topic_cat_map::remove(&ctx.pg_pool, topic_id, category_id).await?;
+    linkdb::topic_cat_map::delete(&ctx.pg_pool, topic_id, category_id).await?;
 
     Ok(())
 }

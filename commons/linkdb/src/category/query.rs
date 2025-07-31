@@ -1,5 +1,105 @@
 use sqlx::types::chrono;
 
+/*
+INSERT INTO your_table (col1, col2)
+SELECT *
+FROM unnest($1::text[], $2::int[])
+ON CONFLICT (col1) DO NOTHING;
+ */
+
+#[tracing::instrument(name = "linkdb::category::upsert", skip_all, err)]
+pub async fn upsert(
+    tx: &mut sqlx::PgTransaction<'_>,
+    rows: Vec<crate::CatRowI>,
+    now: chrono::DateTime<chrono::Utc>,
+) -> Result<Vec<i64>, sqlx::Error> {
+    let names: Vec<_> = rows.iter().map(|r| &r.name).collect();
+    let display_name: Vec<_> = rows.iter().map(|r| &r.display_name).collect();
+    let description: Vec<_> = rows.iter().map(|r| &r.description).collect();
+    let about: Vec<_> = rows.iter().map(|r| &r.about).collect();
+    let priority: Vec<_> = rows.iter().map(|r| &r.priority).collect();
+    let active: Vec<_> = rows.iter().map(|r| &r.active).collect();
+    let public: Vec<_> = rows.iter().map(|r| &r.public).collect();
+    let user_id: Vec<_> = rows.iter().map(|r| &r.user_id).collect();
+
+    let query = r#"
+    WITH ins AS (
+        INSERT INTO linknova_category (
+            name,
+            display_name,
+            description,
+            about,
+            priority,
+            active,
+            public,
+            user_id,
+            created_on,
+            updated_on
+        )
+        SELECT
+            name,
+            display_name,
+            description,
+            about,
+            priority,
+            active,
+            public,
+            user_id,
+            $9,
+            $10
+        FROM unnest(
+            $1::text[],
+            $2::text[],
+            $3::text[],
+            $4::text[],
+            $5::int[],
+            $6::bool[],
+            $7::bool[],
+            $8::text[]
+        ) AS t(
+            name,
+            display_name,
+            description,
+            about,
+            priority,
+            active,
+            public,
+            user_id
+        )
+        ON CONFLICT (name, user_id) DO NOTHING
+    )
+
+    SELECT lc.id, lc.name, lc.user_id
+    FROM linknova_category lc
+    JOIN (
+        SELECT unnest($1::text[]) AS name, unnest($8::text[]) AS user_id
+    ) AS input_keys
+    ON lc.name = input_keys.name AND lc.user_id = input_keys.user_id
+    "#;
+
+    #[derive(sqlx::FromRow, Debug)]
+    struct TempCat {
+        id: i64,
+    }
+
+    let categories: Vec<TempCat> = sqlx::query_as(query)
+        .bind(names)
+        .bind(display_name)
+        .bind(description)
+        .bind(about)
+        .bind(priority)
+        .bind(active)
+        .bind(public)
+        .bind(user_id)
+        .bind(now)
+        .bind(now)
+        .fetch_all(&mut **tx)
+        .await?;
+
+    Ok(categories.into_iter().map(|c| c.id).collect())
+}
+
+#[tracing::instrument(name = "linkdb::category::insert", skip_all, err)]
 pub async fn insert(
     pool: &sqlx::PgPool,
     row: crate::CatRowI,

@@ -4,16 +4,7 @@ use crate::ctx::Ctx;
 
 #[tracing::instrument(name = "service::cat-create", skip_all)]
 pub async fn create(ctx: &Ctx, user_id: &str, req: CatCreateReq) -> Result<(), types::CatError> {
-    let row = linkdb::category::CatRowI {
-        name: req.name,
-        display_name: req.display_name,
-        description: req.description,
-        about: req.about,
-        priority: 0,
-        active: true,
-        public: req.public,
-        user_id: user_id.to_string(),
-    };
+    let row = types::from_req(req, user_id);
     linkdb::category::insert(&ctx.pg_pool, row).await?;
     Ok(())
 }
@@ -111,6 +102,6 @@ pub async fn remove_topic(
     let category_id = linkdb::category::get_id_by_name(&ctx.pg_pool, user_id, cat_name)
         .await?
         .ok_or_else(|| types::CatError::NotFound(format!("category with name: `{}`", cat_name)))?;
-    linkdb::topic_cat_map::remove(&ctx.pg_pool, topic_id, category_id).await?;
+    linkdb::topic_cat_map::delete(&ctx.pg_pool, topic_id, category_id).await?;
     Ok(())
 }
