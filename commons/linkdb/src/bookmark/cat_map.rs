@@ -32,9 +32,11 @@ pub async fn remove_categories(
 ) -> Result<(), sqlx::Error> {
     let query = r#"
         DELETE from linknova_bookmark_category_map as mapping
-        JOIN linknova_category as cat
-        ON cat.id = mapping.category_id
-        WHERE mapping.bookmark_id = $1 AND cat.name = ANY($1)
+        USING linknova_category as cat
+        WHERE
+            cat.id = mapping.category_id
+            AND mapping.bookmark_id = $1
+            AND cat.name = ANY($2)
     "#;
 
     sqlx::query(query)

@@ -4,8 +4,8 @@ meta {
   seq: 2
 }
 
-get {
-  url: http://127.0.0.1:8000/-/link/bm
+delete {
+  url: http://127.0.0.1:8000/-/link/bm/remove-cats/3
   body: json
   auth: inherit
 }
@@ -18,7 +18,7 @@ headers {
 body:json {
   {
     "url": "http://abrark.com/os/path1",
-    "categories": ["c1", "c2", "c7", "c6"]
+    "categories": ["c1", "c2", "c7", "c6", "dddd"]
   }
 }
 
