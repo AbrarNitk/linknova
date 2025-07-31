@@ -35,17 +35,24 @@ pub async fn insert(tx: &mut sqlx::PgTransaction<'_>, row: BookmarkI) -> Result<
 pub async fn get_by_id(pool: &sqlx::PgPool, id: i64) -> Result<BookmarkRow, sqlx::Error> {
     let query = r#"
         SELECT
-            id,
-            url,
-            user_id,
-            title,
-            content,
-            referrer,
-            status,
-            created_on,
-            updated_on
-        FROM linknova_bookmark
-        WHERE id = $1
+            b.id,
+            b.url,
+            b.user_id,
+            b.title,
+            b.content,
+            b.referrer,
+            b.status,
+            b.created_on,
+            b.updated_on,
+            COALESCE(
+                ARRAY_AGG(cat.name ORDER BY cat.name) FILTER (WHERE cat.name IS NOT NULL),
+                '{}'
+            ) AS categories
+        FROM linknova_bookmark as b
+        LEFT JOIN linknova_bookmark_category_map as mapping ON b.id = mapping.bookmark_id
+        LEFT JOIN linknova_category as cat ON mapping.category_id = cat.id
+        WHERE b.id = $1
+        GROUP by b.id
     "#;
 
     let row = sqlx::query_as(query).bind(id).fetch_one(pool).await?;
@@ -56,17 +63,25 @@ pub async fn get_by_id(pool: &sqlx::PgPool, id: i64) -> Result<BookmarkRow, sqlx
 pub async fn filter(pool: &sqlx::PgPool, user_id: &str) -> Result<Vec<BookmarkRow>, sqlx::Error> {
     let query = r#"
         SELECT
-            id,
-            url,
-            user_id,
-            title,
-            content,
-            referrer,
-            status,
-            created_on,
-            updated_on
-        FROM linknova_bookmark
-        WHERE user_id = $1
+            b.id,
+            b.url,
+            b.user_id,
+            b.title,
+            b.content,
+            b.referrer,
+            b.status,
+            b.created_on,
+            b.updated_on,
+            COALESCE(
+                ARRAY_AGG(cat.name ORDER BY cat.name) FILTER (WHERE cat.name IS NOT NULL),
+                '{}'
+            ) AS categories
+
+        FROM linknova_bookmark as b
+        LEFT JOIN linknova_bookmark_category_map as mapping ON b.id = mapping.bookmark_id
+        LEFT JOIN linknova_category as cat ON mapping.category_id = cat.id
+        WHERE b.user_id = $1
+        GROUP by b.id
     "#;
 
     let row = sqlx::query_as(query).bind(user_id).fetch_all(pool).await?;

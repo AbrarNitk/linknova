@@ -36,5 +36,6 @@ pub fn from_db_response(row: BookmarkRow) -> types::BmResponse {
         status: row.status,
         created_on: row.created_on,
         updated_on: row.updated_on,
+        categories: row.categories,
     }
 }

@@ -18,6 +18,7 @@ pub struct BmResponse {
     pub status: String,
     pub created_on: chrono::DateTime<chrono::Utc>,
     pub updated_on: chrono::DateTime<chrono::Utc>,
+    pub categories: Vec<String>,
 }
 
 #[derive(serde::Deserialize, Debug)]
