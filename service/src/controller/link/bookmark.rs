@@ -37,6 +37,7 @@ pub struct ListQueryParams {
     status: Option<String>,
     #[serde(default)]
     category: Vec<String>,
+    topic: Option<String>,
 }
 
 #[tracing::instrument(name = "controller::bookmark::list", skip_all)]
@@ -48,6 +49,7 @@ pub async fn list(
     match link::bookmark::list(
         &ctx,
         user.user_id.as_str(),
+        &q.topic,
         q.category.as_slice(),
         &q.status,
     )

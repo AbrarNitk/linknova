@@ -41,10 +41,23 @@ pub async fn get(ctx: &Ctx, id: i64) -> Result<BmResponse, types::BookmarkError>
 pub async fn list(
     ctx: &Ctx,
     user_id: &str,
+    topic_name: &Option<String>,
     categories: &[String],
     status: &Option<String>,
 ) -> Result<Vec<BmResponse>, types::BookmarkError> {
-    let rows = linkdb::bookmark::filter(&ctx.pg_pool, user_id, Some(categories), status).await?;
+    let rows = match topic_name {
+        Some(t) => {
+            linkdb::bookmark::filter_by_topic(
+                &ctx.pg_pool,
+                user_id,
+                t.as_str(),
+                Some(categories),
+                status,
+            )
+            .await?
+        }
+        None => linkdb::bookmark::filter(&ctx.pg_pool, user_id, Some(categories), status).await?,
+    };
     Ok(rows
         .into_iter()
         .map(|r| types::from_db_response(r))

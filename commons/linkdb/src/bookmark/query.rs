@@ -66,8 +66,6 @@ pub async fn filter(
     categories: Option<&[String]>,
     status: &Option<String>,
 ) -> Result<Vec<BookmarkRow>, sqlx::Error> {
-    dbg!(status);
-
     let mut qb = sqlx::query_builder::QueryBuilder::new(
         r#"
         SELECT
@@ -95,14 +93,6 @@ pub async fn filter(
     qb.push(" b.user_id = ");
     qb.push_bind(user_id);
 
-    if let Some(categories) = categories {
-        if !categories.is_empty() {
-            qb.push(" AND cat.name = ANY(");
-            qb.push_bind(categories);
-            qb.push(')');
-        }
-    }
-
     if let Some(status) = status {
         qb.push(" AND b.status = ");
         qb.push_bind(status);
@@ -110,7 +100,78 @@ pub async fn filter(
 
     qb.push(" GROUP by b.id");
 
-    dbg!(qb.sql());
+    // Use a HAVING clause to filter based on the aggregated categories.
+    if let Some(categories) = categories {
+        if !categories.is_empty() {
+            // This checks if any of the bookmark's categories are in the provided list.
+            qb.push(" HAVING bool_or(cat.name = ANY(");
+            qb.push_bind(categories);
+            qb.push("))");
+        }
+    }
+
+    let row = qb.build_query_as().fetch_all(pool).await?;
+    Ok(row)
+}
+
+#[tracing::instrument(name = "linkdb::bookmark::filter", skip_all, err)]
+pub async fn filter_by_topic(
+    pool: &sqlx::PgPool,
+    user_id: &str,
+    topic_name: &str,
+    categories: Option<&[String]>,
+    status: &Option<String>,
+) -> Result<Vec<BookmarkRow>, sqlx::Error> {
+    // This is the base query for selecting bookmark data and ALL its categories.
+    // The filtering is handled separately below.
+    let mut qb = sqlx::query_builder::QueryBuilder::new(
+        r#"
+        SELECT
+            b.id,
+            b.url,
+            b.user_id,
+            b.title,
+            b.content,
+            b.referrer,
+            b.status,
+            b.created_on,
+            b.updated_on,
+            COALESCE(
+                ARRAY_AGG(cat.name ORDER BY cat.name) FILTER (WHERE cat.name IS NOT NULL),
+                '{}'
+            ) AS categories
+        FROM linknova_bookmark as b
+        LEFT JOIN linknova_bookmark_category_map as bcm ON b.id = bcm.bookmark_id
+        LEFT JOIN linknova_category as cat ON bcm.category_id = cat.id
+        WHERE
+    "#,
+    );
+
+    qb.push(" b.user_id = ");
+    qb.push_bind(user_id);
+
+    // Use an EXISTS subquery to check for a path to the topic without affecting the main JOINs.
+    qb.push(" AND EXISTS (SELECT 1 FROM linknova_topic_category_map tcm JOIN linknova_topic t ON tcm.topic_id = t.id WHERE tcm.category_id = bcm.category_id AND t.name = ");
+    qb.push_bind(topic_name);
+    qb.push(")");
+
+    // The optional status filter is a simple WHERE condition.
+    if let Some(status) = status {
+        qb.push(" AND b.status = ");
+        qb.push_bind(status);
+    }
+
+    qb.push(" GROUP BY b.id");
+
+    // Use a HAVING clause to filter based on the aggregated categories.
+    if let Some(categories) = categories {
+        if !categories.is_empty() {
+            // This checks if any of the bookmark's categories are in the provided list.
+            qb.push(" HAVING bool_or(cat.name = ANY(");
+            qb.push_bind(categories);
+            qb.push("))");
+        }
+    }
 
     let row = qb.build_query_as().fetch_all(pool).await?;
     Ok(row)
