@@ -1,0 +1,489 @@
+<!-- Topics Management -->
+<div class="topics-management">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-8">
+        <div>
+            <h1 class="text-3xl font-bold text-neutral-900 dark:text-neutral-100">
+                Topics Management
+            </h1>
+            <p class="mt-2 text-neutral-600 dark:text-neutral-400">
+                Create and manage topics for organizing your bookmarks
+            </p>
+        </div>
+        <button class="btn-primary" onclick="TopicsManager.showCreateModal()">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+            </svg>
+            Create Topic
+        </button>
+    </div>
+
+    <!-- Search and Filters -->
+    <div class="card mb-6">
+        <div class="card-body">
+            <div class="flex flex-col sm:flex-row gap-4">
+                <!-- Search Input -->
+                <div class="flex-1">
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg class="h-4 w-4 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                        </div>
+                        <input type="text" id="topic-search" 
+                               placeholder="Search topics..." 
+                               class="form-input pl-10 pr-4 py-2 w-full">
+                    </div>
+                </div>
+                
+                <!-- Sort Options -->
+                <div class="flex items-center space-x-4">
+                    <select id="topic-sort" class="form-input">
+                        <option value="name">Sort by Name</option>
+                        <option value="created">Sort by Created</option>
+                        <option value="categories">Sort by Categories</option>
+                        <option value="bookmarks">Sort by Bookmarks</option>
+                    </select>
+                    
+                    <button id="sort-direction-btn" class="btn-ghost p-2" onclick="TopicsManager.toggleSortDirection()">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Topics Grid -->
+    <div id="topics-container">
+        <!-- Loading State -->
+        <div id="topics-loading" class="flex items-center justify-center py-12">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-600"></div>
+        </div>
+        
+        <!-- Topics Grid -->
+        <div id="topics-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 hidden">
+            <!-- Topic cards will be populated here -->
+        </div>
+        
+        <!-- Empty State -->
+        <div id="topics-empty" class="text-center py-12 hidden">
+            <svg class="w-16 h-16 mx-auto mb-4 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+            </svg>
+            <h3 class="text-lg font-medium text-neutral-900 dark:text-neutral-100 mb-2">No topics found</h3>
+            <p class="text-neutral-600 dark:text-neutral-400 mb-6">Get started by creating your first topic</p>
+            <button class="btn-primary" onclick="TopicsManager.showCreateModal()">
+                Create Topic
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Create/Edit Topic Modal -->
+<div id="topic-modal" class="modal-overlay hidden" onclick="TopicsManager.hideModal(event)">
+    <div class="modal-content">
+        <div class="card-header">
+            <h3 class="text-lg font-semibold text-neutral-900 dark:text-neutral-100" id="modal-title">
+                Create Topic
+            </h3>
+        </div>
+        <form id="topic-form" onsubmit="TopicsManager.handleSubmit(event)">
+            <div class="card-body space-y-4">
+                <!-- Topic Name -->
+                <div>
+                    <label for="topic-name" class="form-label">Topic Name *</label>
+                    <input type="text" id="topic-name" name="name" 
+                           class="form-input" 
+                           placeholder="Enter topic name"
+                           required>
+                    <div id="name-error" class="form-error hidden"></div>
+                </div>
+                
+                <!-- Topic Description -->
+                <div>
+                    <label for="topic-description" class="form-label">Description</label>
+                    <textarea id="topic-description" name="description" 
+                              class="form-input h-24" 
+                              placeholder="Enter topic description (optional)"></textarea>
+                </div>
+                
+                <!-- Category Selection -->
+                <div>
+                    <label class="form-label">Categories</label>
+                    <div id="category-selection" class="space-y-2 max-h-48 overflow-y-auto scrollbar-thin">
+                        <!-- Categories will be populated here -->
+                    </div>
+                    <p class="text-sm text-neutral-500 dark:text-neutral-400 mt-2">
+                        Select categories this topic belongs to
+                    </p>
+                </div>
+            </div>
+            
+            <div class="card-footer flex items-center justify-end space-x-3">
+                <button type="button" class="btn-secondary" onclick="TopicsManager.hideModal()">
+                    Cancel
+                </button>
+                <button type="submit" class="btn-primary" id="submit-btn">
+                    <span id="submit-text">Create Topic</span>
+                    <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white ml-2 hidden" id="submit-spinner"></div>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="delete-modal" class="modal-overlay hidden" onclick="TopicsManager.hideDeleteModal(event)">
+    <div class="modal-content">
+        <div class="card-header">
+            <h3 class="text-lg font-semibold text-neutral-900 dark:text-neutral-100">
+                Delete Topic
+            </h3>
+        </div>
+        <div class="card-body">
+            <div class="flex items-center space-x-3 mb-4">
+                <div class="w-12 h-12 bg-error-100 rounded-full flex items-center justify-center dark:bg-error-900/20">
+                    <svg class="w-6 h-6 text-error-600 dark:text-error-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h4 class="font-medium text-neutral-900 dark:text-neutral-100">Are you sure?</h4>
+                    <p class="text-sm text-neutral-600 dark:text-neutral-400">
+                        This action cannot be undone. This will permanently delete the topic 
+                        <strong id="delete-topic-name"></strong> and remove it from all associated bookmarks.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer flex items-center justify-end space-x-3">
+            <button type="button" class="btn-secondary" onclick="TopicsManager.hideDeleteModal()">
+                Cancel
+            </button>
+            <button type="button" class="btn-error" onclick="TopicsManager.confirmDelete()" id="delete-confirm-btn">
+                <span id="delete-text">Delete Topic</span>
+                <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white ml-2 hidden" id="delete-spinner"></div>
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+// Topics Management functionality
+const TopicsManager = {
+    topics: [],
+    categories: [],
+    currentTopic: null,
+    sortField: 'name',
+    sortDirection: 'asc',
+
+    async init() {
+        await this.loadData();
+        this.setupEventListeners();
+        this.render();
+    },
+
+    async loadData() {
+        try {
+            const [topicsResponse, categoriesResponse] = await Promise.all([
+                API.getTopics(),
+                API.getCategories()
+            ]);
+            
+            this.topics = topicsResponse || [];
+            this.categories = categoriesResponse || [];
+            
+        } catch (error) {
+            console.error('Error loading data:', error);
+            Utils.showToast('Failed to load topics and categories', 'error');
+        }
+    },
+
+    setupEventListeners() {
+        // Search functionality
+        const searchInput = document.getElementById('topic-search');
+        searchInput.addEventListener('input', Utils.debounce(() => {
+            this.render();
+        }, 300));
+
+        // Sort functionality
+        const sortSelect = document.getElementById('topic-sort');
+        sortSelect.addEventListener('change', (e) => {
+            this.sortField = e.target.value;
+            this.render();
+        });
+    },
+
+    render() {
+        const searchTerm = document.getElementById('topic-search').value.toLowerCase();
+        let filteredTopics = this.topics.filter(topic => 
+            topic.name.toLowerCase().includes(searchTerm) ||
+            (topic.description && topic.description.toLowerCase().includes(searchTerm))
+        );
+
+        // Sort topics
+        filteredTopics.sort((a, b) => {
+            let aVal = a[this.sortField] || '';
+            let bVal = b[this.sortField] || '';
+            
+            if (typeof aVal === 'string') {
+                aVal = aVal.toLowerCase();
+                bVal = bVal.toLowerCase();
+            }
+            
+            const result = aVal < bVal ? -1 : aVal > bVal ? 1 : 0;
+            return this.sortDirection === 'asc' ? result : -result;
+        });
+
+        const container = document.getElementById('topics-container');
+        const loading = document.getElementById('topics-loading');
+        const grid = document.getElementById('topics-grid');
+        const empty = document.getElementById('topics-empty');
+
+        loading.classList.add('hidden');
+
+        if (filteredTopics.length === 0) {
+            grid.classList.add('hidden');
+            empty.classList.remove('hidden');
+        } else {
+            empty.classList.add('hidden');
+            grid.classList.remove('hidden');
+            this.renderTopicsGrid(filteredTopics);
+        }
+    },
+
+    renderTopicsGrid(topics) {
+        const grid = document.getElementById('topics-grid');
+        grid.innerHTML = topics.map(topic => `
+            <div class="card hover:shadow-medium transition-shadow duration-200">
+                <div class="card-body">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex-1">
+                            <h3 class="font-semibold text-neutral-900 dark:text-neutral-100 mb-1">
+                                ${topic.name}
+                            </h3>
+                            ${topic.description ? `
+                                <p class="text-sm text-neutral-600 dark:text-neutral-400 line-clamp-2">
+                                    ${topic.description}
+                                </p>
+                            ` : ''}
+                        </div>
+                        <div class="flex items-center space-x-1 ml-3">
+                            <button class="btn-ghost p-1" onclick="TopicsManager.editTopic('${topic.id}')" 
+                                    title="Edit topic">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                </svg>
+                            </button>
+                            <button class="btn-ghost p-1 text-error-600 hover:text-error-700" 
+                                    onclick="TopicsManager.deleteTopic('${topic.id}')" 
+                                    title="Delete topic">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-4 text-sm text-neutral-600 dark:text-neutral-400">
+                            <span class="flex items-center">
+                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                                </svg>
+                                ${topic.categoryCount || 0} categories
+                            </span>
+                            <span class="flex items-center">
+                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path>
+                                </svg>
+                                ${topic.bookmarkCount || 0} bookmarks
+                            </span>
+                        </div>
+                    </div>
+                    
+                    ${topic.categories && topic.categories.length > 0 ? `
+                        <div class="mt-3 flex flex-wrap gap-1">
+                            ${topic.categories.slice(0, 3).map(cat => `
+                                <span class="badge-primary text-xs">${cat.name}</span>
+                            `).join('')}
+                            ${topic.categories.length > 3 ? `
+                                <span class="badge-secondary text-xs">+${topic.categories.length - 3} more</span>
+                            ` : ''}
+                        </div>
+                    ` : ''}
+                </div>
+            </div>
+        `).join('');
+    },
+
+    showCreateModal() {
+        this.currentTopic = null;
+        document.getElementById('modal-title').textContent = 'Create Topic';
+        document.getElementById('submit-text').textContent = 'Create Topic';
+        document.getElementById('topic-form').reset();
+        this.renderCategorySelection();
+        document.getElementById('topic-modal').classList.remove('hidden');
+        document.getElementById('topic-name').focus();
+    },
+
+    editTopic(topicId) {
+        this.currentTopic = this.topics.find(t => t.id === topicId);
+        if (!this.currentTopic) return;
+
+        document.getElementById('modal-title').textContent = 'Edit Topic';
+        document.getElementById('submit-text').textContent = 'Update Topic';
+        
+        document.getElementById('topic-name').value = this.currentTopic.name;
+        document.getElementById('topic-description').value = this.currentTopic.description || '';
+        
+        this.renderCategorySelection();
+        document.getElementById('topic-modal').classList.remove('hidden');
+        document.getElementById('topic-name').focus();
+    },
+
+    renderCategorySelection() {
+        const container = document.getElementById('category-selection');
+        const selectedCategories = this.currentTopic ? this.currentTopic.categories || [] : [];
+        
+        container.innerHTML = this.categories.map(category => {
+            const isSelected = selectedCategories.some(sc => sc.id === category.id);
+            return `
+                <label class="flex items-center space-x-3 p-2 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-800 cursor-pointer">
+                    <input type="checkbox" 
+                           name="categories" 
+                           value="${category.id}" 
+                           ${isSelected ? 'checked' : ''}
+                           class="rounded border-neutral-300 text-brand-600 focus:ring-brand-500">
+                    <span class="text-sm text-neutral-900 dark:text-neutral-100">${category.name}</span>
+                </label>
+            `;
+        }).join('');
+    },
+
+    async handleSubmit(event) {
+        event.preventDefault();
+        
+        const submitBtn = document.getElementById('submit-btn');
+        const submitText = document.getElementById('submit-text');
+        const submitSpinner = document.getElementById('submit-spinner');
+        
+        // Show loading state
+        submitBtn.disabled = true;
+        submitText.classList.add('opacity-50');
+        submitSpinner.classList.remove('hidden');
+        
+        try {
+            const formData = new FormData(event.target);
+            const data = {
+                name: formData.get('name').trim(),
+                description: formData.get('description').trim(),
+                categories: Array.from(formData.getAll('categories'))
+            };
+            
+            // Validate
+            if (!data.name) {
+                document.getElementById('name-error').textContent = 'Topic name is required';
+                document.getElementById('name-error').classList.remove('hidden');
+                return;
+            }
+            
+            // Clear errors
+            document.getElementById('name-error').classList.add('hidden');
+            
+            if (this.currentTopic) {
+                await API.updateTopic(this.currentTopic.id, data);
+                Utils.showToast('Topic updated successfully', 'success');
+            } else {
+                await API.createTopic(data);
+                Utils.showToast('Topic created successfully', 'success');
+            }
+            
+            this.hideModal();
+            await this.loadData();
+            this.render();
+            
+        } catch (error) {
+            console.error('Error saving topic:', error);
+            Utils.showToast('Failed to save topic', 'error');
+        } finally {
+            submitBtn.disabled = false;
+            submitText.classList.remove('opacity-50');
+            submitSpinner.classList.add('hidden');
+        }
+    },
+
+    deleteTopic(topicId) {
+        const topic = this.topics.find(t => t.id === topicId);
+        if (!topic) return;
+
+        this.currentTopic = topic;
+        document.getElementById('delete-topic-name').textContent = topic.name;
+        document.getElementById('delete-modal').classList.remove('hidden');
+    },
+
+    async confirmDelete() {
+        if (!this.currentTopic) return;
+
+        const deleteBtn = document.getElementById('delete-confirm-btn');
+        const deleteText = document.getElementById('delete-text');
+        const deleteSpinner = document.getElementById('delete-spinner');
+        
+        deleteBtn.disabled = true;
+        deleteText.classList.add('opacity-50');
+        deleteSpinner.classList.remove('hidden');
+        
+        try {
+            await API.deleteTopic(this.currentTopic.id);
+            Utils.showToast('Topic deleted successfully', 'success');
+            
+            this.hideDeleteModal();
+            await this.loadData();
+            this.render();
+            
+        } catch (error) {
+            console.error('Error deleting topic:', error);
+            Utils.showToast('Failed to delete topic', 'error');
+        } finally {
+            deleteBtn.disabled = false;
+            deleteText.classList.remove('opacity-50');
+            deleteSpinner.classList.add('hidden');
+        }
+    },
+
+    toggleSortDirection() {
+        this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+        this.render();
+        
+        // Update button icon
+        const btn = document.getElementById('sort-direction-btn');
+        const svg = btn.querySelector('svg');
+        if (this.sortDirection === 'desc') {
+            svg.style.transform = 'rotate(180deg)';
+        } else {
+            svg.style.transform = 'rotate(0deg)';
+        }
+    },
+
+    hideModal(event) {
+        if (event && event.target !== event.currentTarget) return;
+        document.getElementById('topic-modal').classList.add('hidden');
+        this.currentTopic = null;
+    },
+
+    hideDeleteModal(event) {
+        if (event && event.target !== event.currentTarget) return;
+        document.getElementById('delete-modal').classList.add('hidden');
+        this.currentTopic = null;
+    }
+};
+
+// Initialize when loaded
+if (typeof window !== 'undefined') {
+    document.addEventListener('DOMContentLoaded', () => {
+        TopicsManager.init();
+    });
+}
+</script>

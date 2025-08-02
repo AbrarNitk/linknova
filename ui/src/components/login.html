@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In - LinkNova</title>
+    <meta name="description" content="Sign in to your LinkNova account to manage your bookmarks">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="/static/css/styles.css">
+    
+    <!-- Theme Script (prevent FOUC) -->
+    <script>
+        const theme = localStorage.getItem('theme') || 
+                     (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        if (theme === 'dark') {
+            document.documentElement.classList.add('dark');
+        }
+    </script>
+</head>
+<body class="h-full bg-neutral-50 dark:bg-neutral-950">
+    <div class="flex min-h-full">
+        <!-- Left side - Login Form -->
+        <div class="flex flex-1 flex-col justify-center px-4 py-12 sm:px-6 lg:flex-none lg:px-20 xl:px-24">
+            <div class="mx-auto w-full max-w-sm lg:w-96">
+                <!-- Logo and Brand -->
+                <div class="mb-8">
+                    <div class="flex items-center space-x-3 mb-6">
+                        <div class="w-10 h-10 bg-gradient-to-br from-brand-500 to-brand-600 rounded-xl flex items-center justify-center">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+                            </svg>
+                        </div>
+                        <h1 class="text-2xl font-bold text-neutral-900 dark:text-neutral-100">
+                            LinkNova
+                        </h1>
+                    </div>
+                    <h2 class="text-3xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
+                        Welcome back
+                    </h2>
+                    <p class="mt-2 text-sm text-neutral-600 dark:text-neutral-400">
+                        Sign in to your account to continue managing your bookmarks
+                    </p>
+                </div>
+
+                <!-- Login Form -->
+                <form id="login-form" class="space-y-6" onsubmit="LoginPage.handleSubmit(event)">
+                    <!-- Error Alert -->
+                    <div id="error-alert" class="hidden rounded-lg border border-error-200 bg-error-50 p-4 dark:border-error-700 dark:bg-error-900/20">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <svg class="h-5 w-5 text-error-600 dark:text-error-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                                </svg>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm font-medium text-error-800 dark:text-error-300" id="error-message">
+                                    <!-- Error message will be inserted here -->
+                                </p>
+                            </div>
+                            <div class="ml-auto pl-3">
+                                <div class="-mx-1.5 -my-1.5">
+                                    <button type="button" 
+                                            class="inline-flex rounded-md p-1.5 text-error-500 hover:bg-error-100 focus:outline-none focus:ring-2 focus:ring-error-600 focus:ring-offset-2 focus:ring-offset-error-50 dark:hover:bg-error-900/40 dark:focus:ring-offset-error-900/20"
+                                            onclick="LoginPage.hideError()">
+                                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Username Field -->
+                    <div>
+                        <label for="username" class="form-label">
+                            Username or Email
+                        </label>
+                        <div class="mt-2">
+                            <input id="username" 
+                                   name="username" 
+                                   type="text" 
+                                   autocomplete="username" 
+                                   required 
+                                   class="form-input"
+                                   placeholder="Enter your username or email">
+                        </div>
+                    </div>
+
+                    <!-- Password Field -->
+                    <div>
+                        <label for="password" class="form-label">
+                            Password
+                        </label>
+                        <div class="mt-2 relative">
+                            <input id="password" 
+                                   name="password" 
+                                   type="password" 
+                                   autocomplete="current-password" 
+                                   required 
+                                   class="form-input pr-10"
+                                   placeholder="Enter your password">
+                            <button type="button" 
+                                    id="toggle-password"
+                                    class="absolute inset-y-0 right-0 flex items-center pr-3 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
+                                    onclick="LoginPage.togglePassword()">
+                                <svg id="eye-open" class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                </svg>
+                                <svg id="eye-closed" class="h-5 w-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Remember Me & Forgot Password -->
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <input id="remember-me" 
+                                   name="remember-me" 
+                                   type="checkbox" 
+                                   class="h-4 w-4 rounded border-neutral-300 text-brand-600 focus:ring-brand-600 dark:border-neutral-600 dark:bg-neutral-800">
+                            <label for="remember-me" class="ml-3 block text-sm leading-6 text-neutral-700 dark:text-neutral-300">
+                                Remember me
+                            </label>
+                        </div>
+
+                        <div class="text-sm leading-6">
+                            <a href="#" class="font-semibold text-brand-600 hover:text-brand-500 dark:text-brand-400 dark:hover:text-brand-300">
+                                Forgot password?
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div>
+                        <button type="submit" 
+                                id="login-button"
+                                class="btn-primary w-full justify-center py-3 text-base font-semibold">
+                            <span id="login-text">Sign in</span>
+                            <div id="login-spinner" class="hidden animate-spin rounded-full h-5 w-5 border-b-2 border-white ml-2"></div>
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Sign Up Link -->
+                <div class="mt-10 text-center">
+                    <p class="text-sm text-neutral-600 dark:text-neutral-400">
+                        Don't have an account?
+                        <a href="#" class="font-semibold leading-6 text-brand-600 hover:text-brand-500 dark:text-brand-400 dark:hover:text-brand-300">
+                            Sign up for free
+                        </a>
+                    </p>
+                </div>
+
+                <!-- Theme Toggle -->
+                <div class="mt-8 flex justify-center">
+                    <button id="theme-toggle" 
+                            class="btn-ghost p-2 rounded-full"
+                            title="Toggle theme">
+                        <svg class="w-5 h-5 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                        </svg>
+                        <svg class="w-5 h-5 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right side - Hero Image/Illustration -->
+        <div class="relative hidden w-0 flex-1 lg:block">
+            <div class="absolute inset-0 bg-gradient-to-br from-brand-600 to-brand-800 flex items-center justify-center">
+                <!-- Hero Content -->
+                <div class="max-w-md text-center text-white px-8">
+                    <div class="mb-8">
+                        <svg class="w-24 h-24 mx-auto mb-6 opacity-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4">
+                        Organize Your Digital Life
+                    </h3>
+                    <p class="text-brand-100 text-lg leading-relaxed">
+                        Save, organize, and discover your bookmarks with topics and categories. 
+                        Your personal knowledge hub awaits.
+                    </p>
+                    
+                    <!-- Feature Highlights -->
+                    <div class="mt-8 space-y-3 text-left">
+                        <div class="flex items-center space-x-3">
+                            <svg class="w-5 h-5 text-brand-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            <span class="text-brand-100">Smart categorization system</span>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <svg class="w-5 h-5 text-brand-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            <span class="text-brand-100">Lightning-fast search</span>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <svg class="w-5 h-5 text-brand-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            <span class="text-brand-100">Cross-device sync</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Decorative Elements -->
+                <div class="absolute top-10 left-10 w-20 h-20 bg-white/10 rounded-full blur-xl"></div>
+                <div class="absolute bottom-10 right-10 w-32 h-32 bg-white/10 rounded-full blur-xl"></div>
+                <div class="absolute top-1/2 left-1/4 w-16 h-16 bg-white/5 rounded-full blur-lg"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/static/js/utils.js"></script>
+    <script src="/static/js/api.js"></script>
+    <script src="/static/js/login.js"></script>
+</body>
+</html>
