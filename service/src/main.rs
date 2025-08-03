@@ -85,18 +85,7 @@ pub async fn http_main() {
         },
     };
 
-    println!(
-        "{}: {}",
-        current_dir().unwrap().display(),
-        ctx.static_dir.display()
-    );
-
-    // let cloned_ctx = ctx.clone();
-    // tokio::task::spawn(async move {
-    //     controller::category::refresh_categories(cloned_ctx).await;
-    // });
-
-    // println!("categories: {:?}", categories);
+    println!("Static DIR to serve files: {}", ctx.static_dir.display());
 
     let app = service::routes::routes(ctx).await;
 

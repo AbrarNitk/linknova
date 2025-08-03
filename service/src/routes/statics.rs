@@ -9,5 +9,10 @@ pub fn routes(ctx: crate::Ctx) -> axum::Router {
             "/-/ln/{*path}",
             axum::routing::get(crate::services::stat_svc::handle_static),
         )
+        // // todo: need to remove this logic, all paths must come with the /-/ln as prefix
+        .route(
+            "/{*path}",
+            axum::routing::get(crate::services::stat_svc::handle_static),
+        )
         .with_state(ctx)
 }

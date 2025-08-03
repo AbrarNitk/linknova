@@ -1797,6 +1797,7 @@ dependencies = [
  "config",
  "futures",
  "linkdb",
+ "mime_guess",
  "percent-encoding",
  "reqwest",
  "serde",

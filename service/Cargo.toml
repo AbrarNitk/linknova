@@ -26,6 +26,7 @@ tracing-forest = { workspace = true }
 chrono = { version = "0.4.31", features = ["serde"] }
 config = "0.15"
 percent-encoding = "2.3.1"
+mime_guess = "2"
 
 
 linkdb =  { path = "../commons/linkdb" }
