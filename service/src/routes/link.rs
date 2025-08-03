@@ -4,7 +4,7 @@ use axum::routing;
 pub async fn router<S>(ctx: crate::ctx::Ctx) -> axum::Router<S> {
     axum::Router::new()
         .nest(
-            "/-/link",
+            "/-/ln/api/",
             axum::Router::new()
                 .route("/topic", routing::post(link::topic::create))
                 .route("/topic/{topic-name}", routing::get(link::topic::get))
@@ -21,7 +21,7 @@ pub async fn router<S>(ctx: crate::ctx::Ctx) -> axum::Router<S> {
                 ),
         )
         .nest(
-            "/-/link",
+            "/-/ln/api/",
             axum::Router::new()
                 .route("/cat", routing::post(link::cat::create))
                 .route("/cat/{cat-name}", routing::get(link::cat::get))
@@ -38,7 +38,7 @@ pub async fn router<S>(ctx: crate::ctx::Ctx) -> axum::Router<S> {
                 ),
         )
         .nest(
-            "/-/link",
+            "/-/ln/api/",
             axum::Router::new()
                 .route("/bm", routing::post(link::bookmark::create))
                 .route("/bm/{id}", routing::get(link::bookmark::get))
