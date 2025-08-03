@@ -282,9 +282,9 @@ const TopicsManager = {
                         </div>
 
                         <!-- Sort -->
-                        <div class="flex items-center space-x-4">
-                            <label class="text-sm font-medium text-neutral-700 dark:text-neutral-300">Sort by:</label>
-                            <select id="topics-sort" class="form-select text-sm py-2 pl-3 pr-8">
+                        <div class="flex items-center space-x-3">
+                            <label class="text-sm font-medium text-neutral-600 dark:text-neutral-400">Sort by:</label>
+                            <select id="topics-sort" class="form-select text-sm py-2 pl-3 pr-8 rounded-lg border-neutral-300 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 focus:border-brand-500 dark:focus:border-brand-400">
                                 <option value="name-asc" ${this.state.sortBy === 'name' && this.state.sortOrder === 'asc' ? 'selected' : ''}>Name (A-Z)</option>
                                 <option value="name-desc" ${this.state.sortBy === 'name' && this.state.sortOrder === 'desc' ? 'selected' : ''}>Name (Z-A)</option>
                                 <option value="priority-desc" ${this.state.sortBy === 'priority' && this.state.sortOrder === 'desc' ? 'selected' : ''}>Priority (High-Low)</option>
@@ -481,7 +481,9 @@ const TopicsManager = {
     async viewTopic(topicName) {
         try {
             this.setLoading(true);
+            console.log('Loading topic:', topicName);
             const topic = await Topic.getByName(topicName);
+            console.log('Topic loaded from API:', topic);
             this.showTopicDetailModal(topic);
         } catch (error) {
             console.error('Error loading topic:', error);
@@ -495,9 +497,16 @@ const TopicsManager = {
      * Show topic detail modal
      */
     showTopicDetailModal(topic) {
+        // Store current topic for reference
+        this.currentTopic = { ...topic };
+        
+        // Debug logging to track category data
+        console.log('Topic data in showTopicDetailModal:', topic);
+        console.log('Categories data:', topic.categories);
+        
         const modal = Components.modal({
             title: topic.display_name || topic.name,
-            size: 'lg',
+            size: 'xl', // Made larger to accommodate category management
             content: this.getTopicDetailHTML(topic),
             showConfirm: false,
             showCancel: false,
@@ -506,10 +515,12 @@ const TopicsManager = {
 
         modal.show();
 
-        // Setup detail modal event listeners
+        // Setup detail modal event listeners and category management
+        // Reduced timeout since categories are now rendered immediately in HTML
         setTimeout(() => {
             this.setupTopicDetailEventListeners(topic, modal);
-        }, 100);
+            this.setupCategoryManagement(topic, modal);
+        }, 10);
     },
 
     /**
@@ -574,19 +585,64 @@ const TopicsManager = {
                     ` : ''}
                 </div>
 
-                <!-- Categories -->
-                ${topic.categories && topic.categories.length > 0 ? `
-                    <div class="mb-6">
-                        <h4 class="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-3">Categories</h4>
-                        <div class="flex flex-wrap gap-2">
-                            ${topic.categories.map(category => `
-                                <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-medium bg-brand-100 text-brand-800 dark:bg-brand-900/20 dark:text-brand-300">
-                                    ${Utils.escapeHTML(category)}
-                                </span>
-                            `).join('')}
+                <!-- Category Management -->
+                <div class="mb-6 category-management">
+                    <div class="flex items-center justify-between mb-3">
+                        <h4 class="text-sm font-medium text-neutral-700 dark:text-neutral-300">Categories</h4>
+                        <div class="flex items-center space-x-2">
+                            <span class="text-xs text-neutral-500 dark:text-neutral-400" id="category-count">
+                                ${topic.categories ? topic.categories.length : 0} assigned
+                            </span>
+                            <span class="text-xs text-orange-600 dark:text-orange-400 hidden" id="pending-changes-indicator">
+                                • Unsaved changes
+                            </span>
                         </div>
                     </div>
-                ` : ''}
+                    
+                    <!-- Add Category Input -->
+                    <div class="mb-4">
+                        <div class="relative">
+                            <input type="text" 
+                                   id="add-category-input" 
+                                   placeholder="Type category name and press Enter or Tab to add..." 
+                                   class="form-input pr-10 text-sm"
+                                   autocomplete="off">
+                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                <svg class="h-4 w-4 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                </svg>
+                            </div>
+                        </div>
+                        <p class="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+                            Type category names and use Enter or Tab to add them. Make multiple changes and save all at once.
+                        </p>
+                    </div>
+                    
+                    <!-- Current Categories List -->
+                    <div class="categories-list" id="topic-categories-list">
+                        ${this.getInitialCategoriesHTML(topic.categories || [])}
+                    </div>
+                    
+                    <!-- Save Changes Button -->
+                    <div class="mt-4 pt-4 border-t border-neutral-200 dark:border-neutral-700">
+                        <div class="flex items-center justify-between">
+                            <div class="text-xs text-neutral-500 dark:text-neutral-400" id="changes-summary">
+                                No pending changes
+                            </div>
+                            <div class="flex space-x-2">
+                                <button id="discard-changes-btn" class="btn-secondary text-xs py-1 px-3 hidden">
+                                    Discard
+                                </button>
+                                <button id="save-changes-btn" class="btn-primary text-xs py-1 px-3 hidden">
+                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                    </svg>
+                                    Save Changes
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
                 <!-- Timestamps -->
                 <div class="mb-6 grid grid-cols-2 gap-4 text-sm">
@@ -620,10 +676,350 @@ const TopicsManager = {
     },
 
     /**
+     * Get initial categories HTML for immediate display
+     */
+    getInitialCategoriesHTML(categories) {
+        console.log('getInitialCategoriesHTML called with:', categories);
+        
+        if (!categories || categories.length === 0) {
+            console.log('No categories found, showing empty state');
+            return `
+                <div class="text-sm text-neutral-500 dark:text-neutral-400 italic py-2">
+                    No categories assigned. Start typing to add categories.
+                </div>
+            `;
+        }
+
+        console.log('Rendering', categories.length, 'categories');
+        return `
+            <div class="flex flex-wrap gap-2">
+                ${categories.map(category => `
+                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-medium bg-brand-100 text-brand-800 dark:bg-brand-900/20 dark:text-brand-300 group">
+                        <span>${Utils.escapeHTML(category)}</span>
+                        <button class="ml-2 hover:text-red-600 dark:hover:text-red-400" 
+                                onclick="TopicsManager.removeCategoryFromModal('${Utils.escapeHTML(category)}')"
+                                title="Remove category">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </span>
+                `).join('')}
+            </div>
+        `;
+    },
+
+    /**
+     * Remove category from modal (called from initial HTML)
+     */
+    removeCategoryFromModal(categoryName) {
+        if (this.pendingChanges) {
+            this.handleBatchedCategoryRemove(categoryName);
+        }
+    },
+
+    /**
      * Setup topic detail event listeners
      */
     setupTopicDetailEventListeners(topic, modal) {
         // Any additional event listeners for the detail modal can be added here
+    },
+
+    /**
+     * Setup category management in topic detail modal
+     */
+    setupCategoryManagement(topic, modal) {
+        console.log('setupCategoryManagement called with topic:', topic);
+        console.log('Topic categories:', topic.categories);
+        
+        // Track pending changes
+        this.pendingChanges = {
+            topic: topic,
+            originalCategories: [...(topic.categories || [])],
+            currentCategories: [...(topic.categories || [])],
+            toAdd: [],
+            toRemove: []
+        };
+        
+        console.log('Pending changes initialized:', this.pendingChanges);
+        
+        // Initialize CategoryInput component with batched handlers
+        CategoryInput.init(
+            'add-category-input',
+            'topic-categories-list',
+            (categoryName, action) => {
+                if (action === 'add') {
+                    this.handleBatchedCategoryAdd(categoryName);
+                } else if (action === 'remove') {
+                    this.handleBatchedCategoryRemove(categoryName);
+                }
+            },
+            (categoryName) => {
+                this.handleBatchedCategoryRemove(categoryName);
+            },
+            this.pendingChanges.currentCategories
+        );
+
+        // Setup save and discard button handlers
+        const saveBtn = document.getElementById('save-changes-btn');
+        const discardBtn = document.getElementById('discard-changes-btn');
+
+        if (saveBtn) {
+            saveBtn.addEventListener('click', async () => {
+                await this.saveCategoryChanges();
+            });
+        }
+
+        if (discardBtn) {
+            discardBtn.addEventListener('click', () => {
+                this.discardCategoryChanges();
+            });
+        }
+
+        // Initial UI update - categories already rendered in HTML, just update pending changes UI
+        this.updatePendingChangesUI();
+        
+        // Safety check: If categories container is empty, re-render
+        const container = document.getElementById('topic-categories-list');
+        if (container && container.innerHTML.trim() === '') {
+            console.log('Categories container is empty, re-rendering...');
+            this.renderCurrentCategories();
+        }
+    },
+
+    /**
+     * Handle batched category addition
+     */
+    handleBatchedCategoryAdd(categoryName) {
+        if (!this.pendingChanges) return;
+        
+        // Add to currentCategories if not already there
+        if (!this.pendingChanges.currentCategories.includes(categoryName)) {
+            this.pendingChanges.currentCategories.push(categoryName);
+        }
+        
+        // Remove from toRemove if it was there (undo removal)
+        const removeIndex = this.pendingChanges.toRemove.indexOf(categoryName);
+        if (removeIndex > -1) {
+            this.pendingChanges.toRemove.splice(removeIndex, 1);
+        } else {
+            // Add to toAdd if it's not in original categories
+            if (!this.pendingChanges.originalCategories.includes(categoryName) && 
+                !this.pendingChanges.toAdd.includes(categoryName)) {
+                this.pendingChanges.toAdd.push(categoryName);
+            }
+        }
+        
+        // Re-render categories in UI
+        this.renderCurrentCategories();
+        this.updatePendingChangesUI();
+    },
+
+    /**
+     * Handle batched category removal
+     */
+    handleBatchedCategoryRemove(categoryName) {
+        if (!this.pendingChanges) return;
+        
+        // Remove from currentCategories
+        const currentIndex = this.pendingChanges.currentCategories.indexOf(categoryName);
+        if (currentIndex > -1) {
+            this.pendingChanges.currentCategories.splice(currentIndex, 1);
+        }
+        
+        // Remove from toAdd if it was there (undo addition)
+        const addIndex = this.pendingChanges.toAdd.indexOf(categoryName);
+        if (addIndex > -1) {
+            this.pendingChanges.toAdd.splice(addIndex, 1);
+        } else {
+            // Add to toRemove if it's in original categories
+            if (this.pendingChanges.originalCategories.includes(categoryName) && 
+                !this.pendingChanges.toRemove.includes(categoryName)) {
+                this.pendingChanges.toRemove.push(categoryName);
+            }
+        }
+        
+        // Re-render categories in UI
+        this.renderCurrentCategories();
+        this.updatePendingChangesUI();
+    },
+
+    /**
+     * Re-render the current categories in the UI
+     */
+    renderCurrentCategories() {
+        if (!this.pendingChanges) return;
+        
+        console.log('renderCurrentCategories called with:', this.pendingChanges.currentCategories);
+        
+        const container = document.getElementById('topic-categories-list');
+        if (container) {
+            CategoryInput.renderExistingCategories(
+                container, 
+                this.pendingChanges.currentCategories, 
+                (categoryName) => {
+                    this.handleBatchedCategoryRemove(categoryName);
+                }
+            );
+        }
+    },
+
+    /**
+     * Update the UI to show pending changes
+     */
+    updatePendingChangesUI() {
+        if (!this.pendingChanges) return;
+
+        const pendingIndicator = document.getElementById('pending-changes-indicator');
+        const changesSummary = document.getElementById('changes-summary');
+        const saveBtn = document.getElementById('save-changes-btn');
+        const discardBtn = document.getElementById('discard-changes-btn');
+        const categoryCount = document.getElementById('category-count');
+
+        const hasChanges = this.pendingChanges.toAdd.length > 0 || this.pendingChanges.toRemove.length > 0;
+        const currentCount = this.pendingChanges.currentCategories.length;
+
+        // Update category count
+        if (categoryCount) {
+            categoryCount.textContent = `${currentCount} assigned`;
+        }
+
+        if (hasChanges) {
+            // Show pending changes indicator
+            if (pendingIndicator) {
+                pendingIndicator.classList.remove('hidden');
+            }
+
+            // Update changes summary
+            if (changesSummary) {
+                const addCount = this.pendingChanges.toAdd.length;
+                const removeCount = this.pendingChanges.toRemove.length;
+                let summary = [];
+                
+                if (addCount > 0) {
+                    summary.push(`+${addCount} to add`);
+                }
+                if (removeCount > 0) {
+                    summary.push(`-${removeCount} to remove`);
+                }
+                
+                changesSummary.textContent = summary.join(', ');
+                changesSummary.classList.add('text-orange-600', 'dark:text-orange-400');
+            }
+
+            // Show save/discard buttons
+            if (saveBtn) saveBtn.classList.remove('hidden');
+            if (discardBtn) discardBtn.classList.remove('hidden');
+
+        } else {
+            // Hide pending changes indicator
+            if (pendingIndicator) {
+                pendingIndicator.classList.add('hidden');
+            }
+
+            // Reset changes summary
+            if (changesSummary) {
+                changesSummary.textContent = 'No pending changes';
+                changesSummary.classList.remove('text-orange-600', 'dark:text-orange-400');
+            }
+
+            // Hide save/discard buttons
+            if (saveBtn) saveBtn.classList.add('hidden');
+            if (discardBtn) discardBtn.classList.add('hidden');
+        }
+    },
+
+    /**
+     * Save all pending category changes
+     */
+    async saveCategoryChanges() {
+        if (!this.pendingChanges || (!this.pendingChanges.toAdd.length && !this.pendingChanges.toRemove.length)) {
+            return;
+        }
+
+        const saveBtn = document.getElementById('save-changes-btn');
+        const originalText = saveBtn ? saveBtn.innerHTML : '';
+
+        try {
+            // Show loading state
+            if (saveBtn) {
+                saveBtn.disabled = true;
+                saveBtn.innerHTML = `
+                    <svg class="w-3 h-3 mr-1 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                    </svg>
+                    Saving...
+                `;
+            }
+
+            const topicName = this.pendingChanges.topic.name;
+
+            // Make API calls for additions and removals
+            const promises = [];
+            
+            if (this.pendingChanges.toAdd.length > 0) {
+                promises.push(Category.addToTopic(topicName, this.pendingChanges.toAdd));
+            }
+            
+            if (this.pendingChanges.toRemove.length > 0) {
+                promises.push(Category.removeFromTopic(topicName, this.pendingChanges.toRemove));
+            }
+
+            await Promise.all(promises);
+
+            // Update the topic in the main state
+            const topicIndex = this.state.topics.findIndex(t => t.name === topicName);
+            if (topicIndex !== -1) {
+                this.state.topics[topicIndex].categories = [...this.pendingChanges.currentCategories];
+                
+                // Update filtered topics
+                this.state.filteredTopics = [...this.state.topics];
+                this.applyFiltersAndSort();
+                this.renderTopicsList();
+            }
+
+            // Update current topic reference
+            if (this.currentTopic && this.currentTopic.name === topicName) {
+                this.currentTopic.categories = [...this.pendingChanges.currentCategories];
+            }
+
+            // Reset pending changes
+            this.pendingChanges.originalCategories = [...this.pendingChanges.currentCategories];
+            this.pendingChanges.toAdd = [];
+            this.pendingChanges.toRemove = [];
+
+            this.updatePendingChangesUI();
+
+            Utils.showToast('Category changes saved successfully', 'success');
+
+        } catch (error) {
+            console.error('Error saving category changes:', error);
+            Utils.showToast(`Failed to save changes: ${error.message}`, 'error');
+        } finally {
+            // Restore button state
+            if (saveBtn) {
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = originalText;
+            }
+        }
+    },
+
+    /**
+     * Discard all pending category changes
+     */
+    discardCategoryChanges() {
+        if (!this.pendingChanges) return;
+
+        // Reset to original categories
+        this.pendingChanges.currentCategories = [...this.pendingChanges.originalCategories];
+        this.pendingChanges.toAdd = [];
+        this.pendingChanges.toRemove = [];
+
+        // Re-render categories list
+        this.renderCurrentCategories();
+
+        this.updatePendingChangesUI();
+        Utils.showToast('Changes discarded', 'info');
     },
 
     /**

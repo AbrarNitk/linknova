@@ -505,8 +505,15 @@ const App = {
      * Load categories page content
      */
     async loadCategoriesPage() {
-        const response = await fetch('/-/ln/admin/cats/index.html');
-        return await response.text();
+        // Return a placeholder HTML that will be replaced by CategoriesManager.render()
+        return `
+            <div id="categories-page-placeholder">
+                <div class="flex items-center justify-center py-12">
+                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-600"></div>
+                    <span class="ml-3 text-neutral-600 dark:text-neutral-400">Loading categories...</span>
+                </div>
+            </div>
+        `;
     },
 
     /**
