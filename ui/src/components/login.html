@@ -7,7 +7,7 @@
     <meta name="description" content="Sign in to your LinkNova account to manage your bookmarks">
     
     <!-- Styles -->
-    <link rel="stylesheet" href="/static/css/styles.css">
+    <link rel="stylesheet" href="/-/ln/static/css/styles.css">
     
     <!-- Theme Script (prevent FOUC) -->
     <script>
@@ -44,7 +44,7 @@
                 </div>
 
                 <!-- Login Form -->
-                <form id="login-form" class="space-y-6" onsubmit="LoginPage.handleSubmit(event)">
+                <div id="login-form" class="space-y-6">
                     <!-- Error Alert -->
                     <div id="error-alert" class="hidden rounded-lg border border-error-200 bg-error-50 p-4 dark:border-error-700 dark:bg-error-900/20">
                         <div class="flex items-center">
@@ -137,14 +137,15 @@
 
                     <!-- Submit Button -->
                     <div>
-                        <button type="submit" 
+                        <button type="button" 
                                 id="login-button"
+                                onclick="LoginPage.handleLogin()"
                                 class="btn-primary w-full justify-center py-3 text-base font-semibold">
                             <span id="login-text">Sign in</span>
                             <div id="login-spinner" class="hidden animate-spin rounded-full h-5 w-5 border-b-2 border-white ml-2"></div>
                         </button>
                     </div>
-                </form>
+                </div>
 
                 <!-- Sign Up Link -->
                 <div class="mt-10 text-center">
@@ -222,8 +223,8 @@
     </div>
 
     <!-- Scripts -->
-    <script src="/static/js/utils.js"></script>
-    <script src="/static/js/api.js"></script>
-    <script src="/static/js/login.js"></script>
+    <script src="/-/ln/static/js/utils.js"></script>
+    <script src="/-/ln/static/js/api.js"></script>
+    <script src="/-/ln/static/js/login.js"></script>
 </body>
 </html>

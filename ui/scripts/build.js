@@ -76,9 +76,33 @@ async function build() {
     await fs.rm('dist', { recursive: true, force: true });
     await fs.mkdir('dist', { recursive: true });
     
-    // Process all files in src
+    // Process components folder - copy contents directly to dist root
+    const componentsDir = 'src/components';
+    try {
+      await walkDirectory(componentsDir, async (filePath) => {
+        const relativePath = path.relative(componentsDir, filePath);
+        const destPath = path.join('dist', relativePath);
+        const ext = path.extname(filePath).toLowerCase();
+        
+        if (ext === '.html') {
+          await minifyHTML(filePath, destPath);
+        } else {
+          await copyFile(filePath, destPath);
+        }
+      });
+    } catch (error) {
+      console.log('Components directory not found, skipping...');
+    }
+    
+    // Process other files in src (excluding components)
     await walkDirectory('src', async (filePath) => {
       const relativePath = path.relative('src', filePath);
+      
+      // Skip components folder as we've already processed it
+      if (relativePath.startsWith('components/') || relativePath === 'components') {
+        return;
+      }
+      
       const destPath = path.join('dist', relativePath);
       const ext = path.extname(filePath).toLowerCase();
       

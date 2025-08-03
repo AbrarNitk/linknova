@@ -4,15 +4,19 @@ pub fn routes(ctx: crate::Ctx) -> axum::Router {
             "/-/ln",
             axum::routing::get(crate::services::stat_svc::handle_index),
         )
+        .route(
+            "/-/ln/",
+            axum::routing::get(crate::services::stat_svc::handle_index),
+        )
         // Note: this does not match the empty segments
         .route(
             "/-/ln/{*path}",
-            axum::routing::get(crate::services::stat_svc::handle_static),
+            axum::routing::get(crate::services::stat_svc::handle_static_route),
         )
         // // todo: need to remove this logic, all paths must come with the /-/ln as prefix
-        .route(
-            "/{*path}",
-            axum::routing::get(crate::services::stat_svc::handle_static),
-        )
+        // .route(
+        //     "/{*path}",
+        //     axum::routing::get(crate::services::stat_svc::handle_static),
+        // )
         .with_state(ctx)
 }

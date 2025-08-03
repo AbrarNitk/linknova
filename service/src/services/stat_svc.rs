@@ -2,6 +2,7 @@ use crate::ctx::Ctx;
 use axum::extract::{Path, State};
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
+use axum_extra::extract::CookieJar;
 use std::fs;
 use std::path::PathBuf;
 
@@ -10,27 +11,43 @@ pub fn temporary_user_verify(user_id: &str) -> bool {
     true
 }
 
-pub async fn handle_index(headers: axum::http::HeaderMap) -> Response {
+pub async fn handle_index(State(ctx): State<Ctx>, jar: CookieJar) -> Response {
     // check the login header, if user is valid then redirect it to the home page otherwise
     // return the login page
-    let user_id = match headers.get("X-USER-ID") {
-        Some(user_id) => user_id.to_str().expect("user-id header is invalid"),
+    //
+    println!("got the index request");
+    let user_id = match jar.get("X-USER-ID") {
+        Some(user_id) => user_id,
         None => return axum::response::Redirect::permanent("/-/ln/login").into_response(),
     };
 
-    if temporary_user_verify(user_id) {
-        axum::response::Response::builder()
-            .status(axum::http::status::StatusCode::PERMANENT_REDIRECT)
-            .header(axum::http::header::LOCATION, "/-/ln/")
-            .header(axum::http::header::SET_COOKIE, "X-USER-ID=some-user-id")
-            .body(axum::body::Body::empty())
-            .unwrap()
-    } else {
-        axum::response::Redirect::permanent("/-/ln/login").into_response()
-    }
+    println!("user-id: {}", user_id.value());
+
+    //
+    // if temporary_user_verify(user_id) {
+    //     let response = handle_static(&ctx, "/").await;
+    //     // response.headers_mut().insert()
+    //
+    //     // axum::response::Response::builder()
+    //     //     .status(axum::http::status::StatusCode::PERMANENT_REDIRECT)
+    //     //     .header(axum::http::header::LOCATION, "/-/ln/")
+    //     //     .header(axum::http::header::SET_COOKIE, "X-USER-ID=some-user-id")
+    //     //     .body(axum::body::Body::empty())
+    //     //     .unwrap()
+    //     response
+    // } else {
+    //     axum::response::Redirect::permanent("/-/ln/login").into_response()
+    // }
+
+    let response = handle_static(&ctx, "index.html").await;
+    response
 }
 
-pub async fn handle_static(State(ctx): State<Ctx>, Path(path): Path<String>) -> Response {
+pub async fn handle_static_route(State(ctx): State<Ctx>, Path(path): Path<String>) -> Response {
+    handle_static(&ctx, &path).await
+}
+
+pub async fn handle_static(ctx: &Ctx, path: &str) -> Response {
     println!("file-path: {}", path);
 
     // if file exists then canonicalize check and serve

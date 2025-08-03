@@ -32,14 +32,8 @@ const App = {
             // Initialize utilities and theme
             Utils.theme.init();
             
-            // Check authentication status
-            await this.checkAuthentication();
-            
-            // If not authenticated, redirect to login
-            if (!this.state.isAuthenticated) {
-                this.redirectToLogin();
-                return;
-            }
+
+        // Note: Removed automatic redirect to login - let backend handle authentication
             
             // Setup event listeners
             this.setupEventListeners();
@@ -115,11 +109,7 @@ const App = {
             // Show logout message
             Utils.showToast('You have been logged out', 'info', 3000);
             
-            // Redirect to URL provided by backend
-            setTimeout(() => {
-                const redirectUrl = response.redirectUrl || './components/login.html';
-                window.location.href = redirectUrl;
-            }, 1000);
+            // Note: Removed automatic redirect - let backend handle logout redirect
             
         } catch (error) {
             console.error('Logout failed:', error);
@@ -128,17 +118,17 @@ const App = {
             this.clearAuthentication();
             Utils.showToast('Logout failed, but redirecting to login', 'warning');
             
-            setTimeout(() => {
-                window.location.href = './components/login.html';
-            }, 1000);
+            // Note: Removed automatic redirect on logout failure
         }
     },
 
     /**
-     * Redirect to login page
+     * Redirect to login page - REMOVED
+     * Note: Frontend no longer handles redirects automatically
      */
     redirectToLogin() {
-        window.location.href = './components/login.html';
+        console.log('⚠️ redirectToLogin called but redirect logic removed');
+        // Redirect logic removed - let backend handle authentication
     },
 
     /**
@@ -500,7 +490,7 @@ const App = {
      * Load topics page content
      */
     async loadTopicsPage() {
-        const response = await fetch('/src/components/admin/topics/index.html');
+        const response = await fetch('/-/ln/admin/topics/index.html');
         return await response.text();
     },
 
@@ -508,7 +498,7 @@ const App = {
      * Load categories page content
      */
     async loadCategoriesPage() {
-        const response = await fetch('/src/components/admin/cats/index.html');
+        const response = await fetch('/-/ln/admin/cats/index.html');
         return await response.text();
     },
 
@@ -516,7 +506,7 @@ const App = {
      * Load admin page content
      */
     async loadAdminPage() {
-        const response = await fetch('/src/components/admin/index.html');
+        const response = await fetch('/-/ln/admin/index.html');
         return await response.text();
     },
 

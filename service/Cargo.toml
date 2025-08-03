@@ -29,5 +29,6 @@ percent-encoding = "2.3.1"
 mime_guess = "2"
 
 
+
 linkdb =  { path = "../commons/linkdb" }
-axum-extra = { version = "0.10.1", features = ["query"] }
+axum-extra = { version = "0.10.1", features = ["query", "cookie"] }

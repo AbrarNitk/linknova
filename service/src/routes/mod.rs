@@ -1,6 +1,7 @@
 mod health;
 mod hn;
 mod link;
+pub mod login;
 mod statics;
 
 pub async fn routes(ctx: crate::Ctx) -> axum::Router {
@@ -20,6 +21,7 @@ pub async fn routes(ctx: crate::Ctx) -> axum::Router {
                     crate::middlewares::api::verify_secrets,
                 )),
         )
+        .merge(login::routes())
         .merge(statics::routes(ctx))
         .merge(hn::router().await);
 
