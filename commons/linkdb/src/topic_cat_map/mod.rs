@@ -1,3 +1,3 @@
 pub mod query;
 
-pub use query::{connect, delete};
+pub use query::{add_categories, connect, delete, remove_categories};

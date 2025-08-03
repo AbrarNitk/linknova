@@ -42,7 +42,7 @@ pub async fn get(
             public: t.public,
             created_on: t.created_on,
             updated_on: t.updated_on,
-            categories: vec![],
+            categories: t.categories,
         }),
         None => Err(types::TopicError::NotFound(format!(
             "topic not found with name: {}",
@@ -93,18 +93,29 @@ pub async fn add_category(
     ctx: &Ctx,
     user_id: &str,
     topic_name: &str,
-    cat_name: &str,
+    categories: Vec<String>,
 ) -> Result<(), types::TopicError> {
     let topic_id = linkdb::topic::get_id_by_name(&ctx.pg_pool, user_id, topic_name)
         .await?
         .ok_or_else(|| types::TopicError::NotFound(format!("topic with name: `{}`", topic_name)))?;
-    let category_id = linkdb::category::get_id_by_name(&ctx.pg_pool, user_id, cat_name)
-        .await?
-        .ok_or_else(|| {
-            types::TopicError::NotFound(format!("category with name: `{}`", cat_name))
-        })?;
 
-    linkdb::topic_cat_map::connect(&ctx.pg_pool, topic_id, category_id).await?;
+    // first upsert the category
+    let categories: Vec<_> = categories
+        .iter()
+        .map(|c| super::cat::types::from_cat_name(c, user_id))
+        .collect();
+
+    let mut tx = ctx.pg_pool.begin().await?;
+    let now = chrono::Utc::now();
+
+    tracing::info!(msg = "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$", ?categories);
+
+    let category_ids = linkdb::category::upsert(&mut tx, categories, now).await?;
+
+    tracing::info!(msg = "$$$$$$$$$$$$$$$$$$$$", ?category_ids);
+
+    linkdb::topic_cat_map::add_categories(&mut tx, topic_id, category_ids.as_slice()).await?;
+    tx.commit().await?;
 
     Ok(())
 }
@@ -114,18 +125,13 @@ pub async fn remove_category(
     ctx: &Ctx,
     user_id: &str,
     topic_name: &str,
-    cat_name: &str,
+    cat_names: Vec<String>,
 ) -> Result<(), types::TopicError> {
     let topic_id = linkdb::topic::get_id_by_name(&ctx.pg_pool, user_id, topic_name)
         .await?
         .ok_or_else(|| types::TopicError::NotFound(format!("topic with name: `{}`", topic_name)))?;
-    let category_id = linkdb::category::get_id_by_name(&ctx.pg_pool, user_id, cat_name)
-        .await?
-        .ok_or_else(|| {
-            types::TopicError::NotFound(format!("category with name: `{}`", cat_name))
-        })?;
 
-    linkdb::topic_cat_map::delete(&ctx.pg_pool, topic_id, category_id).await?;
+    linkdb::topic_cat_map::remove_categories(&ctx.pg_pool, topic_id, cat_names.as_slice()).await?;
 
     Ok(())
 }

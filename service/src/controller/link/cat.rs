@@ -84,7 +84,7 @@ pub async fn delete(
 }
 
 #[tracing::instrument(name = "controller::cat::add-topic", skip_all)]
-pub async fn add_topic(
+pub async fn add_topics(
     State(ctx): State<Ctx>,
     Extension(user): Extension<AuthUser>,
     Path((cat_name, topic_name)): Path<(String, String)>,
@@ -106,7 +106,7 @@ pub async fn add_topic(
 }
 
 #[tracing::instrument(name = "controller::cat::remove-topic", skip_all)]
-pub async fn remove_topic(
+pub async fn remove_topics(
     State(ctx): State<Ctx>,
     Extension(user): Extension<AuthUser>,
     Path((cat_name, topic_name)): Path<(String, String)>,

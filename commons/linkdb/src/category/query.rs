@@ -66,15 +66,15 @@ pub async fn upsert(
             public,
             user_id
         )
-        ON CONFLICT (name, user_id) DO NOTHING
-    )
+        ON CONFLICT (name, user_id)
 
-    SELECT lc.id, lc.name, lc.user_id
-    FROM linknova_category lc
-    JOIN (
-        SELECT unnest($1::text[]) AS name, unnest($8::text[]) AS user_id
-    ) AS input_keys
-    ON lc.name = input_keys.name AND lc.user_id = input_keys.user_id
+        DO UPDATE SET
+        -- Perform a benign update to ensure RETURNING works for existing rows.
+        -- Updating the 'updated_on' timestamp is a common and useful practice.
+        updated_on = EXCLUDED.updated_on
+        RETURNING id
+    )
+    SELECT id FROM ins;
     "#;
 
     #[derive(sqlx::FromRow, Debug)]

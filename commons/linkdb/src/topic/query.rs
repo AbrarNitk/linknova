@@ -182,7 +182,7 @@ pub async fn delete(
     topic_name: &str,
 ) -> Result<(), sqlx::Error> {
     let query = r#"
-        DELETE FROM linknova_topic WHERE name = $1 user_id = $2 returning id
+        DELETE FROM linknova_topic WHERE name = $1 AND user_id = $2 returning id
     "#;
 
     let (_id,): (i64,) = sqlx::query_as(query)

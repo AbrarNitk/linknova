@@ -5,7 +5,7 @@ pub async fn add_categories(
     categories: &[i64],
 ) -> Result<(), sqlx::Error> {
     // Build a Vec with topic_id repeated for each category
-    let topic_ids: Vec<i64> = std::iter::repeat(bookmark_id)
+    let bookmark_ids: Vec<i64> = std::iter::repeat(bookmark_id)
         .take(categories.len())
         .collect();
 
@@ -17,7 +17,7 @@ pub async fn add_categories(
     "#;
 
     sqlx::query(query)
-        .bind(&topic_ids)
+        .bind(&bookmark_ids)
         .bind(categories)
         .execute(&mut **tx)
         .await?;

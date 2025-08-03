@@ -12,11 +12,11 @@ pub async fn router<S>(ctx: crate::ctx::Ctx) -> axum::Router<S> {
                 .route("/topic/{topic-name}", routing::put(link::topic::update))
                 .route("/topic/{topic-name}", routing::delete(link::topic::delete))
                 .route(
-                    "/topic/{topic-name}/{cat-name}",
+                    "/topic/{topic-name}/add-cats",
                     routing::put(link::topic::add_cat),
                 )
                 .route(
-                    "/topic/{topic-name}/{cat-name}",
+                    "/topic/{topic-name}/remove-cats",
                     routing::delete(link::topic::remove_cat),
                 ),
         )
@@ -28,14 +28,8 @@ pub async fn router<S>(ctx: crate::ctx::Ctx) -> axum::Router<S> {
                 .route("/cat", routing::get(link::cat::list))
                 .route("/cat/{cat-name}", routing::put(link::cat::update))
                 .route("/cat/{cat-name}", routing::delete(link::cat::delete))
-                .route(
-                    "/cat/{cat-name}/{topic-name}",
-                    routing::put(link::cat::add_topic),
-                )
-                .route(
-                    "/cat/{cat-name}/{topic-name}",
-                    routing::delete(link::cat::remove_topic),
-                ),
+                .route("/cat/{cat-name}", routing::put(link::cat::add_topics))
+                .route("/cat/{cat-name}", routing::delete(link::cat::remove_topics)),
         )
         .nest(
             "/-/ln/v1/api/",

@@ -79,17 +79,23 @@ pub async fn delete(
     }
 }
 
+#[derive(serde::Deserialize)]
+pub struct Categories {
+    categories: Vec<String>,
+}
+
 #[tracing::instrument(name = "controller::topic::add-category", skip_all)]
 pub async fn add_cat(
     State(ctx): State<Ctx>,
     Extension(user): Extension<AuthUser>,
-    Path((topic_name, cat_name)): Path<(String, String)>,
+    Path(topic_name): Path<String>,
+    axum::Json(req): axum::Json<Categories>,
 ) -> Response {
     match link::topic::add_category(
         &ctx,
         user.user_id.as_str(),
         topic_name.as_str(),
-        cat_name.as_str(),
+        req.categories,
     )
     .await
     {
@@ -105,13 +111,14 @@ pub async fn add_cat(
 pub async fn remove_cat(
     State(ctx): State<Ctx>,
     Extension(user): Extension<AuthUser>,
-    Path((topic_name, cat_name)): Path<(String, String)>,
+    Path(topic_name): Path<String>,
+    axum::Json(req): axum::Json<Categories>,
 ) -> Response {
     match link::topic::remove_category(
         &ctx,
         user.user_id.as_str(),
         topic_name.as_str(),
-        cat_name.as_str(),
+        req.categories,
     )
     .await
     {
