@@ -21,15 +21,10 @@ impl AuthUser {
     fn try_from_header(
         parts: &axum::http::request::Parts,
     ) -> Result<Option<String>, super::AuthError> {
-        let authorization = parts.headers.get("X-USER-ID").map(|h| h.to_str());
-
+        let cookie = axum_extra::extract::CookieJar::from_headers(&parts.headers);
         // return if it contains the header
-        if let Some(Ok(authorization)) = authorization {
-            let auth_header = match percent_decode(authorization.as_bytes()).decode_utf8() {
-                Ok(auth_header) => auth_header,
-                Err(err) => return Err(super::AuthError::UserDecodeError(err.to_string())),
-            };
-            return Ok(Some(auth_header.into_owned()));
+        if let Some(user_id) = cookie.get("X-USER-ID") {
+            return Ok(Some(user_id.value().to_string()));
         }
         Ok(None)
     }
