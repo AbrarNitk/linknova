@@ -42,6 +42,7 @@ pub async fn get(
             public: t.public,
             created_on: t.created_on,
             updated_on: t.updated_on,
+            categories: vec![],
         }),
         None => Err(types::TopicError::NotFound(format!(
             "topic not found with name: {}",
@@ -67,6 +68,7 @@ pub async fn list(
             public: r.public,
             created_on: r.created_on,
             updated_on: r.updated_on,
+            categories: r.categories,
         })
         .collect())
 }

@@ -1,6 +1,5 @@
 use crate::controller::response;
 use axum::extract::Request;
-use percent_encoding::percent_decode;
 
 #[tracing::instrument(name = "middleware::auth-user", skip_all)]
 pub async fn auth_user(

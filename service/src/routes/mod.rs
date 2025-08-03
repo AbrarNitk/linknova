@@ -15,11 +15,10 @@ pub async fn routes(ctx: crate::Ctx) -> axum::Router {
                 .await
                 .route_layer(axum::middleware::from_fn(
                     crate::middlewares::user::auth_user,
-                ))
-                .route_layer(axum::middleware::from_fn_with_state(
-                    ctx.clone(),
-                    crate::middlewares::api::verify_secrets,
-                )),
+                )), // .route_layer(axum::middleware::from_fn_with_state(
+                    //     ctx.clone(),
+                    //     crate::middlewares::api::verify_secrets,
+                    // )),
         )
         .merge(login::routes())
         .merge(statics::routes(ctx))

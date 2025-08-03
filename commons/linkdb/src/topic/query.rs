@@ -51,19 +51,31 @@ pub async fn get_by_name(
 ) -> Result<Option<types::TopicRow>, sqlx::Error> {
     let query = r#"
         select
-            id,
-            name,
-            display_name,
-            description,
-            about,
-            priority,
-            active,
-            public,
-            user_id,
-            created_on,
-            updated_on
-        FROM linknova_topic
-        WHERE name = $1 AND user_id = $2
+            t.id,
+            t.name,
+            t.display_name,
+            t.description,
+            t.about,
+            t.priority,
+            t.active,
+            t.public,
+            t.user_id,
+            t.created_on,
+            t.updated_on,
+            COALESCE(
+                array_agg(c.name) FILTER (WHERE c.id IS NOT NULL),
+                '{}'::text[]
+            ) as categories
+        FROM linknova_topic as t
+        LEFT JOIN
+            linknova_topic_category_map tcm ON t.id = tcm.topic_id
+        LEFT JOIN
+            linknova_category as c on tcm.category_id = c.id
+        WHERE t.name = $1 AND t.user_id = $2
+        GROUP BY
+            t.id
+        ORDER BY
+            t.name
     "#;
 
     sqlx::query_as(query)
@@ -100,17 +112,29 @@ pub async fn list_all(
 ) -> Result<Vec<types::TopicRowView>, sqlx::Error> {
     let query = r#"
         select
-            id,
-            name,
-            display_name,
-            description,
-            priority,
-            active,
-            public,
-            created_on,
-            updated_on
-        FROM linknova_topic
-        WHERE user_id = $1
+            t.id,
+            t.name,
+            t.display_name,
+            t.description,
+            t.priority,
+            t.active,
+            t.public,
+            t.created_on,
+            t.updated_on,
+            COALESCE(
+                array_agg(c.name) FILTER (WHERE c.id IS NOT NULL),
+                '{}'::text[]
+            ) as categories
+        FROM linknova_topic as t
+        LEFT JOIN
+            linknova_topic_category_map tcm ON t.id = tcm.topic_id
+        LEFT JOIN
+            linknova_category as c on tcm.category_id = c.id
+        WHERE
+            t.user_id = $1
+        GROUP BY
+            t.id
+        ORDER BY t.name
     "#;
 
     sqlx::query_as(query).bind(user_id).fetch_all(pool).await
