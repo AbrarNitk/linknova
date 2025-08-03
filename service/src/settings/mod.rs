@@ -3,6 +3,7 @@ use config::File;
 #[derive(Debug, serde::Deserialize)]
 pub struct Settings {
     pub service: ServiceSettings,
+    pub static_dir: Option<String>,
 }
 
 #[derive(Debug, serde::Deserialize)]

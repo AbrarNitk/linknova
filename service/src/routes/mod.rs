@@ -1,11 +1,12 @@
 mod health;
 mod hn;
 mod link;
+mod statics;
 
 pub async fn routes(ctx: crate::Ctx) -> axum::Router {
     let router = axum::Router::new()
         .route(
-            "/-/link/health",
+            "/-/ln/health",
             axum::routing::on(axum::routing::MethodFilter::GET, health::health),
         )
         .merge(
@@ -19,6 +20,7 @@ pub async fn routes(ctx: crate::Ctx) -> axum::Router {
                     crate::middlewares::api::verify_secrets,
                 )),
         )
+        .merge(statics::routes(ctx))
         .merge(hn::router().await);
 
     // .route(

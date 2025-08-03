@@ -77,7 +77,19 @@ pub async fn http_main() {
         pg_pool: pool,
         category_map: std::sync::Arc::new(std::sync::RwLock::new(categories)),
         secret: settings.service.secrets,
+        static_dir: match settings.static_dir {
+            Some(p) => std::path::PathBuf::from(p)
+                .canonicalize()
+                .expect("not able to canonicalize static_dir file path or not found"),
+            None => current_dir().expect("can't read current-dir"),
+        },
     };
+
+    println!(
+        "{}: {}",
+        current_dir().unwrap().display(),
+        ctx.static_dir.display()
+    );
 
     // let cloned_ctx = ctx.clone();
     // tokio::task::spawn(async move {

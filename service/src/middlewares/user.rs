@@ -21,7 +21,7 @@ impl AuthUser {
     fn try_from_header(
         parts: &axum::http::request::Parts,
     ) -> Result<Option<String>, super::AuthError> {
-        let authorization = parts.headers.get("user-id").map(|h| h.to_str());
+        let authorization = parts.headers.get("X-USER-ID").map(|h| h.to_str());
 
         // return if it contains the header
         if let Some(Ok(authorization)) = authorization {
