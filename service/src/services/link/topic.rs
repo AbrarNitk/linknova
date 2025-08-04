@@ -77,7 +77,7 @@ pub async fn list(
 pub async fn update(
     _ctx: &Ctx,
     _topic_name: &str,
-    _update_req: link::types::TopicCreateReq,
+    _update_req: link::types::TopicUpdateReq,
 ) -> Result<(), types::TopicError> {
     Ok(())
 }

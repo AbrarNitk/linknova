@@ -1,5 +1,5 @@
-use crate::TopicRowView;
 use crate::topic::types;
+use crate::topic::types::TopicInfo;
 use sqlx::types::chrono;
 
 #[tracing::instrument(name = "linkdb::topic::insert", skip_all, err)]
@@ -145,9 +145,10 @@ pub async fn list_by_cat_name(
     pool: &sqlx::PgPool,
     cat_names: &[String],
     user_id: &str,
-) -> Result<Vec<TopicRowView>, sqlx::Error> {
+) -> Result<Vec<TopicInfo>, sqlx::Error> {
     let query = r#"
         SELECT
+            topic.id,
             topic.name,
             topic.display_name,
             topic.description,
@@ -163,12 +164,11 @@ pub async fn list_by_cat_name(
             ON mapping.category_id = category.id
         WHERE
             topic.user_id = $1 AND
-            category.user_id = $2 AND
-            category.name = ANY($1)
+            category.user_id = $1 AND
+            category.name = ANY($2)
     "#;
 
     sqlx::query_as(query)
-        .bind(user_id)
         .bind(user_id)
         .bind(cat_names)
         .fetch_all(pool)

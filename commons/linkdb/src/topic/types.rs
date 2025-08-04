@@ -42,3 +42,16 @@ pub struct TopicRowView {
     pub updated_on: chrono::DateTime<chrono::Utc>,
     pub categories: Vec<String>,
 }
+
+#[derive(FromRow, Debug)]
+pub struct TopicInfo {
+    pub id: i64,
+    pub name: String,
+    pub display_name: Option<String>,
+    pub description: Option<String>,
+    pub priority: i32,
+    pub active: bool,
+    pub public: bool,
+    pub created_on: chrono::DateTime<chrono::Utc>,
+    pub updated_on: chrono::DateTime<chrono::Utc>,
+}

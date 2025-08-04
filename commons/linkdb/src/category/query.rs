@@ -248,7 +248,46 @@ pub async fn list_by_topic_name(
         .await
 }
 
-#[tracing::instrument(name = "linkdb::topic::delete", skip_all, err)]
+#[tracing::instrument(name = "linkdb::category::update", skip_all, err)]
+pub async fn update(
+    pool: &sqlx::PgPool,
+    user_id: &str,
+    cat_name: &str,
+    display_name: Option<String>,
+    about: Option<String>,
+    description: Option<String>,
+    public: Option<bool>,
+    priority: Option<i32>,
+) -> Result<(), sqlx::Error> {
+    let now = chrono::Utc::now();
+
+    let query = r#"
+        UPDATE linknova_category SET
+            display_name = COALESCE($3, display_name),
+            about = COALESCE($4, about),
+            description = COALESCE($5, description),
+            public = COALESCE($6, public),
+            priority = COALESCE($7, priority),
+            updated_on = $8
+        WHERE name = $1 AND user_id = $2
+    "#;
+
+    sqlx::query(query)
+        .bind(cat_name)
+        .bind(user_id)
+        .bind(display_name)
+        .bind(about)
+        .bind(description)
+        .bind(public)
+        .bind(priority)
+        .bind(now)
+        .execute(pool)
+        .await?;
+
+    Ok(())
+}
+
+#[tracing::instrument(name = "linkdb::category::delete", skip_all, err)]
 pub async fn delete(pool: &sqlx::PgPool, user_id: &str, cat_name: &str) -> Result<(), sqlx::Error> {
     let query = r#"
         DELETE FROM linknova_category WHERE name = $1 and user_id = $2 returning id

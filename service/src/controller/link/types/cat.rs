@@ -22,4 +22,14 @@ pub struct CatGetRes {
     pub priority: i32,
     pub created_on: chrono::DateTime<chrono::Utc>,
     pub updated_on: chrono::DateTime<chrono::Utc>,
+    pub topics: Vec<String>,
+}
+
+#[derive(serde::Deserialize)]
+pub struct CatUpdateReq {
+    pub display_name: Option<String>,
+    pub about: Option<String>,
+    pub description: Option<String>,
+    pub public: Option<bool>,
+    pub priority: Option<i32>,
 }

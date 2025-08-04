@@ -1,4 +1,4 @@
-use super::types::CatCreateReq;
+use super::types::{CatCreateReq, CatUpdateReq};
 use crate::controller::response;
 use crate::ctx::Ctx;
 use crate::middlewares::user::AuthUser;
@@ -56,10 +56,11 @@ pub async fn list(
 #[tracing::instrument(name = "controller::cat::update", skip_all)]
 pub async fn update(
     State(ctx): State<Ctx>,
+    Extension(user): Extension<AuthUser>,
     Path(cat_name): Path<String>,
-    axum::Json(request): axum::Json<CatCreateReq>,
+    axum::Json(request): axum::Json<CatUpdateReq>,
 ) -> Response {
-    match link::cat::update(&ctx, cat_name.as_str(), request).await {
+    match link::cat::update(&ctx, user.user_id.as_str(), cat_name.as_str(), request).await {
         Ok(r) => response::success(axum::http::StatusCode::OK, r),
         Err(e) => {
             tracing::error!("err: {:?}", e);
@@ -127,8 +128,59 @@ pub async fn remove_topics(
     }
 }
 
+#[tracing::instrument(name = "controller::cat::add-topics-bulk", skip_all)]
+pub async fn add_topics_bulk(
+    State(ctx): State<Ctx>,
+    Extension(user): Extension<AuthUser>,
+    Path(cat_name): Path<String>,
+    axum::Json(request): axum::Json<TopicsRequest>,
+) -> Response {
+    match link::cat::add_topics_bulk(
+        &ctx,
+        user.user_id.as_str(),
+        cat_name.as_str(),
+        &request.topics,
+    )
+    .await
+    {
+        Ok(r) => response::success(axum::http::StatusCode::OK, r),
+        Err(e) => {
+            tracing::error!("err: {:?}", e);
+            response::error(axum::http::StatusCode::INTERNAL_SERVER_ERROR, e.to_string())
+        }
+    }
+}
+
+#[tracing::instrument(name = "controller::cat::remove-topics-bulk", skip_all)]
+pub async fn remove_topics_bulk(
+    State(ctx): State<Ctx>,
+    Extension(user): Extension<AuthUser>,
+    Path(cat_name): Path<String>,
+    axum::Json(request): axum::Json<TopicsRequest>,
+) -> Response {
+    match link::cat::remove_topics_bulk(
+        &ctx,
+        user.user_id.as_str(),
+        cat_name.as_str(),
+        &request.topics,
+    )
+    .await
+    {
+        Ok(r) => response::success(axum::http::StatusCode::OK, r),
+        Err(e) => {
+            tracing::error!("err: {:?}", e);
+            response::error(axum::http::StatusCode::INTERNAL_SERVER_ERROR, e.to_string())
+        }
+    }
+}
+
 #[derive(serde::Deserialize, Debug)]
 pub struct CatApiQuery {
     #[serde(default)]
     pub topic: Vec<String>,
+}
+
+#[derive(serde::Deserialize, Debug)]
+pub struct TopicsRequest {
+    pub topics: Vec<String>,
 }

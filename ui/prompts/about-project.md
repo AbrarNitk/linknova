@@ -120,3 +120,64 @@ On the category home page we have different components
   - we can add the topics
 - You must be professional UI/UX, add any details if I have missed anything form the UI
   perspective.
+
+
+## Category API
+
+
+### UI APIs
+
+Topic home page is rendered with GET `/-/ln/category` url.
+
+
+### Category Backend API
+
+All the backend apis follows the `api-base`
+
+- List API: GET `/cat`, it returns the list of `CatGetRes`
+- GET API: GET `/cat/{cat-name}` it returns `CatGetRes`
+- Create API: POST `/cat` it accept `CatCreateReq` as data
+- Update API: PUT `/cat/{cat-name}`, it accet the `CatUpdateReq`
+- Delete API: DELETE `/cat/{cat-name}`
+- Add categories: PUT `/cat/{cat-name}`, it accepts data as `{ "topics": [<list of topic name>] }`
+- Add categories: DELETE `/cat/{cat-name}`, it accepts data as `{ "topics": [<list of topic name>] }`
+
+
+```rust
+#[derive(serde::Serialize)]
+pub struct CatGetRes {
+   pub name: String,
+    pub display_name: Option<String>,
+    pub about: Option<String>,
+    pub description: Option<String>,
+    #[serde(default)]
+    pub public: bool,
+    #[serde(default)]
+    pub priority: i32,
+    pub created_on: chrono::DateTime<chrono::Utc>,
+    pub updated_on: chrono::DateTime<chrono::Utc>,
+    pub topics: Vec<String>
+}
+
+#[derive(serde::Deserialize)]
+pub struct CatCreateReq {
+    pub name: String,
+    pub display_name: Option<String>,
+    pub about: Option<String>,
+    pub description: Option<String>,
+    #[serde(default)]
+    pub public: bool,
+    #[serde(default)]
+    pub priority: i32,
+}
+
+#[derive(serde::Deserialize)]
+pub struct CatUpdateReq {
+    pub display_name: Option<String>,
+    pub about: Option<String>,
+    pub description: Option<String>,
+    pub public: Option<bool>,
+    pub priority: Option<i32>,
+}
+
+```

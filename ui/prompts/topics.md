@@ -4,8 +4,6 @@ in this thread we focus on developing the topic UI screen, create topic, topic d
 
 Make sure not to generate the unnecessary code, and focus one thing at a time, if about the topic is asked for, do not work on other things like category.
 
-So let's develop the topic screen, also make sure to keep the code segregation properly, for topic, category and bookmark, structure and code segregation must be well.
-
 
 ## Response
 

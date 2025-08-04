@@ -53,7 +53,7 @@ pub async fn update(
     State(ctx): State<Ctx>,
     Extension(_user): Extension<AuthUser>,
     Path(topic_name): Path<String>,
-    axum::Json(request): axum::Json<super::types::TopicCreateReq>,
+    axum::Json(request): axum::Json<super::types::TopicUpdateReq>,
 ) -> Response {
     match link::topic::update(&ctx, topic_name.as_str(), request).await {
         Ok(r) => response::success(axum::http::StatusCode::OK, r),

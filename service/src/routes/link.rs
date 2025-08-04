@@ -28,13 +28,21 @@ pub async fn router<S>(ctx: crate::ctx::Ctx) -> axum::Router<S> {
                 .route("/cat", routing::get(link::cat::list))
                 .route("/cat/{cat-name}", routing::put(link::cat::update))
                 .route("/cat/{cat-name}", routing::delete(link::cat::delete))
+                // .route(
+                //     "/cat/{cat-name}/{topic-name}",
+                //     routing::put(link::cat::add_topics),
+                // )
+                // .route(
+                //     "/cat/{cat-name}/{topic-name}",
+                //     routing::delete(link::cat::remove_topics),
+                // )
                 .route(
-                    "/cat/{cat-name}/{topic-name}",
-                    routing::put(link::cat::add_topics),
+                    "/cat/{cat-name}/add-topics",
+                    routing::put(link::cat::add_topics_bulk),
                 )
                 .route(
-                    "/cat/{cat-name}/{topic-name}",
-                    routing::delete(link::cat::remove_topics),
+                    "/cat/{cat-name}/remove-topics",
+                    routing::delete(link::cat::remove_topics_bulk),
                 ),
         )
         .nest(

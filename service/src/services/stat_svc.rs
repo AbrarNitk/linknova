@@ -62,7 +62,6 @@ pub async fn handle_static(ctx: &Ctx, path: &str) -> Response {
 
     println!("file-path 2: {}", path);
 
-
     // 2. try serving the path /path.html
     let mut file_path_variant_2 = ctx.static_dir.join(&path);
     file_path_variant_2.set_extension("html");
@@ -94,7 +93,6 @@ async fn check_and_serve(base_path: &std::path::Path, file_path: PathBuf) -> Opt
 
     println!("file-path 3: {}", file_path.display());
 
-
     // Then, canonicalize the existing path to resolve `..` and symlinks.
     let canonical_path = match fs::canonicalize(&file_path) {
         Ok(p) => p,
@@ -103,7 +101,6 @@ async fn check_and_serve(base_path: &std::path::Path, file_path: PathBuf) -> Opt
 
     // The crucial security check.
     if !canonical_path.starts_with(base_path) {
-
         println!("returning forbidden");
 
         return Some(StatusCode::FORBIDDEN.into_response());
