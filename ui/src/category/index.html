@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Categories - LinkNova</title>
+    <meta name="description" content="Manage your bookmark categories - LinkNova">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/-/ln/assets/favicon.svg">
+    <link rel="icon" type="image/png" href="/-/ln/assets/favicon.png">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="/-/ln/static/css/styles.css">
+    
+    <!-- Theme Script (prevent FOUC) -->
+    <script>
+        const theme = localStorage.getItem('theme') || 
+                     (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        if (theme === 'dark') {
+            document.documentElement.classList.add('dark');
+        }
+    </script>
+</head>
+<body class="h-full bg-neutral-50 dark:bg-neutral-900">
+    <div id="app" class="min-h-full">
+        <!-- Navigation Header -->
+        <nav class="bg-white shadow-soft border-b border-neutral-200 dark:bg-neutral-900 dark:border-neutral-700">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center h-16">
+                    <!-- Logo and Brand -->
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <a href="/-/ln" class="flex items-center space-x-3">
+                                <div class="w-8 h-8 bg-gradient-to-br from-brand-500 to-brand-600 rounded-lg flex items-center justify-center">
+                                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+                                    </svg>
+                                </div>
+                                <h1 class="text-xl font-bold text-neutral-900 dark:text-neutral-100">LinkNova</h1>
+                            </a>
+                        </div>
+                        
+                        <!-- Desktop Navigation -->
+                        <div class="hidden md:block ml-10">
+                            <div class="flex items-center space-x-4">
+                                <a href="/-/ln/bookmark" class="nav-link">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path>
+                                    </svg>
+                                    Bookmarks
+                                </a>
+                                <a href="/-/ln/topic" class="nav-link">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                                    </svg>
+                                    Topics
+                                </a>
+                                <a href="/-/ln/category" class="nav-link-active">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                                    </svg>
+                                    Categories
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right side items -->
+                    <div class="flex items-center space-x-4">
+                        <!-- Theme Toggle -->
+                        <button id="theme-toggle" class="p-2 rounded-lg text-neutral-500 hover:text-neutral-700 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:text-neutral-200 dark:hover:bg-neutral-800 transition-colors">
+                            <svg class="w-5 h-5 dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                            </svg>
+                            <svg class="w-5 h-5 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                            </svg>
+                        </button>
+
+                        <!-- User Menu -->
+                        <div class="relative" id="user-menu">
+                            <button onclick="toggleUserMenu()" class="flex items-center space-x-2 p-2 rounded-lg text-neutral-700 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-800 transition-colors">
+                                <div class="w-8 h-8 bg-brand-100 text-brand-700 rounded-full flex items-center justify-center font-medium dark:bg-brand-900/20 dark:text-brand-300">
+                                    <span id="user-initial">U</span>
+                                </div>
+                                <span class="hidden sm:block text-sm font-medium" id="user-name">User</span>
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                </svg>
+                            </button>
+                            
+                            <!-- Dropdown Menu -->
+                            <div id="user-dropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-strong border border-neutral-200 dark:bg-neutral-800 dark:border-neutral-700 z-50">
+                                <div class="py-2">
+                                    <a href="/-/ln/profile" class="block px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-700">Profile</a>
+                                    <a href="/-/ln/settings" class="block px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-700">Settings</a>
+                                    <div class="border-t border-neutral-200 dark:border-neutral-600 mt-2 pt-2">
+                                        <button onclick="logout()" class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/10">
+                                            Sign Out
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+            <!-- Page Header -->
+            <div class="flex items-center justify-between mb-8">
+                <div>
+                    <h1 class="text-3xl font-bold text-neutral-900 dark:text-neutral-100">Categories</h1>
+                    <p class="mt-2 text-neutral-600 dark:text-neutral-400">
+                        Organize and manage your bookmark categories
+                    </p>
+                </div>
+                <button onclick="showCreateModal()" class="btn-primary">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                    </svg>
+                    Create Category
+                </button>
+            </div>
+
+            <!-- Search and Filters -->
+            <div class="card mb-6">
+                <div class="card-body">
+                    <div class="flex flex-col sm:flex-row gap-4">
+                        <div class="flex-1">
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <svg class="h-4 w-4 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                    </svg>
+                                </div>
+                                <input type="text" id="category-search" 
+                                       placeholder="Search categories..." 
+                                       class="form-input pl-10 pr-4 py-2 w-full">
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-4">
+                            <select id="category-sort" class="form-input">
+                                <option value="name">Sort by Name</option>
+                                <option value="created_on">Sort by Created</option>
+                                <option value="priority">Sort by Priority</option>
+                            </select>
+                            <button id="sort-direction-btn" onclick="alert('Sort - implement later')" class="btn-ghost p-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Categories Grid -->
+            <div id="categories-container">
+                <!-- Loading State -->
+                <div id="categories-loading" class="flex items-center justify-center py-12">
+                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-600"></div>
+                    <span class="ml-3 text-neutral-600 dark:text-neutral-400">Loading categories...</span>
+                </div>
+                
+                <!-- Categories Grid -->
+                <div id="categories-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 hidden"></div>
+                
+                <!-- Empty State -->
+                <div id="categories-empty" class="text-center py-12 hidden">
+                    <svg class="w-16 h-16 mx-auto mb-4 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                    </svg>
+                    <h3 class="text-lg font-medium text-neutral-900 dark:text-neutral-100 mb-2">No categories found</h3>
+                    <p class="text-neutral-600 dark:text-neutral-400 mb-6">Get started by creating your first category</p>
+                    <button onclick="showCreateModal()" class="btn-primary">
+                        Create Category
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="fixed top-4 right-4 z-50 space-y-2"></div>
+
+    <!-- Modals -->
+    <div id="category-modals-container"></div>
+
+    <!-- Core Scripts -->
+    <script src="/-/ln/static/js/utils.js"></script>
+    <script src="/-/ln/static/js/api.js"></script>
+
+    
+    <!-- Page Scripts -->
+    <script src="/-/ln/static/js/pages/category.js"></script>
+</body>
+</html>

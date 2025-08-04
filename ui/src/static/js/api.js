@@ -90,17 +90,17 @@ const API = {
          */
         async getAll(params = {}) {
             const queryString = new URLSearchParams(params).toString();
-            const endpoint = `/api/topics${queryString ? `?${queryString}` : ''}`;
+            const endpoint = `/v1/api/topic${queryString ? `?${queryString}` : ''}`;
             return API.request(endpoint);
         },
 
         /**
-         * Get topic by ID
-         * @param {string} id - Topic ID
+         * Get topic by name
+         * @param {string} name - Topic name
          * @returns {Promise<Object>} Topic data
          */
-        async getById(id) {
-            return API.request(`/api/topics/${id}`);
+        async getByName(name) {
+            return API.request(`/v1/api/topic/${encodeURIComponent(name)}`);
         },
 
         /**
@@ -109,7 +109,7 @@ const API = {
          * @returns {Promise<Object>} Created topic
          */
         async create(data) {
-            return API.request('/api/topics', {
+            return API.request('/v1/api/topic', {
                 method: 'POST',
                 data
             });
@@ -117,12 +117,12 @@ const API = {
 
         /**
          * Update topic
-         * @param {string} id - Topic ID
+         * @param {string} name - Topic name
          * @param {Object} data - Updated topic data
          * @returns {Promise<Object>} Updated topic
          */
-        async update(id, data) {
-            return API.request(`/api/topics/${id}`, {
+        async update(name, data) {
+            return API.request(`/v1/api/topic/${encodeURIComponent(name)}`, {
                 method: 'PUT',
                 data
             });
@@ -130,11 +130,11 @@ const API = {
 
         /**
          * Delete topic
-         * @param {string} id - Topic ID
+         * @param {string} name - Topic name
          * @returns {Promise<Object>} Deletion result
          */
-        async delete(id) {
-            return API.request(`/api/topics/${id}`, {
+        async delete(name) {
+            return API.request(`/v1/api/topic/${encodeURIComponent(name)}`, {
                 method: 'DELETE'
             });
         }
@@ -149,17 +149,17 @@ const API = {
          */
         async getAll(params = {}) {
             const queryString = new URLSearchParams(params).toString();
-            const endpoint = `/api/categories${queryString ? `?${queryString}` : ''}`;
+            const endpoint = `/v1/api/cat${queryString ? `?${queryString}` : ''}`;
             return API.request(endpoint);
         },
 
         /**
-         * Get category by ID
-         * @param {string} id - Category ID
+         * Get category by name
+         * @param {string} name - Category name
          * @returns {Promise<Object>} Category data
          */
-        async getById(id) {
-            return API.request(`/api/categories/${id}`);
+        async getByName(name) {
+            return API.request(`/v1/api/cat/${encodeURIComponent(name)}`);
         },
 
         /**
@@ -168,7 +168,7 @@ const API = {
          * @returns {Promise<Object>} Created category
          */
         async create(data) {
-            return API.request('/api/categories', {
+            return API.request('/v1/api/cat', {
                 method: 'POST',
                 data
             });
@@ -176,12 +176,12 @@ const API = {
 
         /**
          * Update category
-         * @param {string} id - Category ID
+         * @param {string} name - Category name
          * @param {Object} data - Updated category data
          * @returns {Promise<Object>} Updated category
          */
-        async update(id, data) {
-            return API.request(`/api/categories/${id}`, {
+        async update(name, data) {
+            return API.request(`/v1/api/cat/${encodeURIComponent(name)}`, {
                 method: 'PUT',
                 data
             });
@@ -189,11 +189,35 @@ const API = {
 
         /**
          * Delete category
-         * @param {string} id - Category ID
+         * @param {string} name - Category name
          * @returns {Promise<Object>} Deletion result
          */
-        async delete(id) {
-            return API.request(`/api/categories/${id}`, {
+        async delete(name) {
+            return API.request(`/v1/api/cat/${encodeURIComponent(name)}`, {
+                method: 'DELETE'
+            });
+        },
+
+        /**
+         * Add topic to category
+         * @param {string} categoryName - Category name
+         * @param {string} topicName - Topic name
+         * @returns {Promise<Object>} Result
+         */
+        async addTopic(categoryName, topicName) {
+            return API.request(`/v1/api/cat/${encodeURIComponent(categoryName)}/${encodeURIComponent(topicName)}`, {
+                method: 'POST'
+            });
+        },
+
+        /**
+         * Remove topic from category
+         * @param {string} categoryName - Category name
+         * @param {string} topicName - Topic name
+         * @returns {Promise<Object>} Result
+         */
+        async removeTopic(categoryName, topicName) {
+            return API.request(`/v1/api/cat/${encodeURIComponent(categoryName)}/${encodeURIComponent(topicName)}`, {
                 method: 'DELETE'
             });
         }
@@ -208,7 +232,7 @@ const API = {
          */
         async getAll(params = {}) {
             const queryString = new URLSearchParams(params).toString();
-            const endpoint = `/api/bookmarks${queryString ? `?${queryString}` : ''}`;
+            const endpoint = `/v1/api/bm${queryString ? `?${queryString}` : ''}`;
             return API.request(endpoint);
         },
 
@@ -218,7 +242,7 @@ const API = {
          * @returns {Promise<Object>} Bookmark data
          */
         async getById(id) {
-            return API.request(`/api/bookmarks/${id}`);
+            return API.request(`/v1/api/bm/${id}`);
         },
 
         /**
@@ -227,7 +251,7 @@ const API = {
          * @returns {Promise<Object>} Created bookmark
          */
         async create(data) {
-            return API.request('/api/bookmarks', {
+            return API.request('/v1/api/bm', {
                 method: 'POST',
                 data
             });
@@ -240,7 +264,7 @@ const API = {
          * @returns {Promise<Object>} Updated bookmark
          */
         async update(id, data) {
-            return API.request(`/api/bookmarks/${id}`, {
+            return API.request(`/v1/api/bm/${id}`, {
                 method: 'PUT',
                 data
             });
@@ -252,7 +276,7 @@ const API = {
          * @returns {Promise<Object>} Deletion result
          */
         async delete(id) {
-            return API.request(`/api/bookmarks/${id}`, {
+            return API.request(`/v1/api/bm/${id}`, {
                 method: 'DELETE'
             });
         },
@@ -264,7 +288,7 @@ const API = {
          * @returns {Promise<Array>} Search results
          */
         async search(query, filters = {}) {
-            return API.request('/api/bookmarks/search', {
+            return API.request('/v1/api/bm/search', {
                 method: 'POST',
                 data: { query, ...filters }
             });
@@ -278,26 +302,26 @@ const API = {
          * @returns {Promise<Object>} Dashboard stats
          */
         async getDashboard() {
-            return API.request('/api/stats/dashboard');
+            return API.request('/v1/api/stats/dashboard');
         },
 
         /**
          * Get topic statistics
-         * @param {string} topicId - Topic ID (optional)
+         * @param {string} topicName - Topic name (optional)
          * @returns {Promise<Object>} Topic stats
          */
-        async getTopics(topicId = null) {
-            const endpoint = topicId ? `/api/stats/topics/${topicId}` : '/api/stats/topics';
+        async getTopics(topicName = null) {
+            const endpoint = topicName ? `/v1/api/stats/topics/${encodeURIComponent(topicName)}` : '/v1/api/stats/topics';
             return API.request(endpoint);
         },
 
         /**
          * Get category statistics
-         * @param {string} categoryId - Category ID (optional)
+         * @param {string} categoryName - Category name (optional)
          * @returns {Promise<Object>} Category stats
          */
-        async getCategories(categoryId = null) {
-            const endpoint = categoryId ? `/api/stats/categories/${categoryId}` : '/api/stats/categories';
+        async getCategories(categoryName = null) {
+            const endpoint = categoryName ? `/v1/api/stats/categories/${encodeURIComponent(categoryName)}` : '/v1/api/stats/categories';
             return API.request(endpoint);
         }
     },
@@ -309,7 +333,7 @@ const API = {
          * @returns {Promise<Object>} Authentication status and redirect info
          */
         async checkStatus() {
-            return API.request('/api/auth/status');
+            return API.request('/v1/api/auth/status');
         },
 
         /**
@@ -318,7 +342,7 @@ const API = {
          * @returns {Promise<Object>} Authentication response with redirect URL
          */
         async login(credentials) {
-            return API.request('/api/login', {
+            return API.request('/v1/api/auth/login', {
                 method: 'POST',
                 data: credentials
             });
@@ -329,7 +353,7 @@ const API = {
          * @returns {Promise<Object>} Logout response with redirect URL
          */
         async logout() {
-            return API.request('/api/auth/logout', {
+            return API.request('/v1/api/auth/logout', {
                 method: 'POST'
             });
         },
@@ -339,7 +363,7 @@ const API = {
          * @returns {Promise<Object>} User data
          */
         async getProfile() {
-            return API.request('/api/auth/profile');
+            return API.request('/v1/api/auth/profile');
         },
 
         /**
@@ -348,7 +372,7 @@ const API = {
          * @returns {Promise<Object>} Updated profile
          */
         async updateProfile(data) {
-            return API.request('/api/auth/profile', {
+            return API.request('/v1/api/auth/profile', {
                 method: 'PUT',
                 data
             });
@@ -363,7 +387,7 @@ const API = {
          * @returns {Promise<Object>} URL metadata
          */
         async fetchMetadata(url) {
-            return API.request('/api/utils/metadata', {
+            return API.request('/v1/api/utils/metadata', {
                 method: 'POST',
                 data: { url }
             });
@@ -374,7 +398,7 @@ const API = {
          * @returns {Promise<Object>} Health status
          */
         async health() {
-            return API.request('/api/health');
+            return API.request('/v1/api/health');
         }
     }
 };

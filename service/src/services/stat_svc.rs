@@ -55,8 +55,13 @@ pub async fn handle_static(ctx: &Ctx, path: &str) -> Response {
     // 1. try serving the path as it is
     let file_path_variant_1 = ctx.static_dir.join(&path);
     if let Some(response) = check_and_serve(&ctx.static_dir, file_path_variant_1).await {
+        println!("file-path 1: {}", path);
+
         return response;
     }
+
+    println!("file-path 2: {}", path);
+
 
     // 2. try serving the path /path.html
     let mut file_path_variant_2 = ctx.static_dir.join(&path);
@@ -80,9 +85,15 @@ pub async fn handle_static(ctx: &Ctx, path: &str) -> Response {
 async fn check_and_serve(base_path: &std::path::Path, file_path: PathBuf) -> Option<Response> {
     // First, check if the file exists without canonicalizing,
     // to avoid an error for non-existent paths.
-    if !file_path.exists() {
+
+    println!("file-path 2: {}", file_path.display());
+
+    if !file_path.is_file() {
         return None;
     }
+
+    println!("file-path 3: {}", file_path.display());
+
 
     // Then, canonicalize the existing path to resolve `..` and symlinks.
     let canonical_path = match fs::canonicalize(&file_path) {
@@ -92,6 +103,9 @@ async fn check_and_serve(base_path: &std::path::Path, file_path: PathBuf) -> Opt
 
     // The crucial security check.
     if !canonical_path.starts_with(base_path) {
+
+        println!("returning forbidden");
+
         return Some(StatusCode::FORBIDDEN.into_response());
     }
     Some(read_and_serve_file(canonical_path).await)

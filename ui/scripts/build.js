@@ -40,7 +40,7 @@ async function minifyJavaScript(src, dest) {
     const js = await fs.readFile(src, 'utf8');
     const result = await minifyJS(js, {
       compress: {
-        drop_console: true,
+        drop_console: false, // Keep console logs for debugging
         drop_debugger: true
       },
       mangle: true
@@ -76,46 +76,44 @@ async function build() {
     await fs.rm('dist', { recursive: true, force: true });
     await fs.mkdir('dist', { recursive: true });
     
-    // Process components folder - copy contents directly to dist root
-    const componentsDir = 'src/components';
-    try {
-      await walkDirectory(componentsDir, async (filePath) => {
-        const relativePath = path.relative(componentsDir, filePath);
-        const destPath = path.join('dist', relativePath);
-        const ext = path.extname(filePath).toLowerCase();
-        
-        if (ext === '.html') {
-          await minifyHTML(filePath, destPath);
-        } else {
-          await copyFile(filePath, destPath);
-        }
-      });
-    } catch (error) {
-      console.log('Components directory not found, skipping...');
-    }
-    
-    // Process other files in src (excluding components)
+    // Build standalone pages and their assets
     await walkDirectory('src', async (filePath) => {
       const relativePath = path.relative('src', filePath);
-      
-      // Skip components folder as we've already processed it
-      if (relativePath.startsWith('components/') || relativePath === 'components') {
-        return;
-      }
-      
       const destPath = path.join('dist', relativePath);
       const ext = path.extname(filePath).toLowerCase();
+      
+      console.log(`Processing: ${relativePath}`);
       
       if (ext === '.html') {
         await minifyHTML(filePath, destPath);
       } else if (ext === '.js') {
         await minifyJavaScript(filePath, destPath);
+      } else if (ext === '.css') {
+        // Copy CSS files as-is (already minified by Tailwind)
+        await copyFile(filePath, destPath);
       } else {
+        // Copy other files as-is
         await copyFile(filePath, destPath);
       }
     });
-    
+
     console.log('✅ Build completed successfully!');
+    console.log('📁 Built files structure:');
+    console.log('   dist/');
+    console.log('   ├── index.html              # Landing page');
+    console.log('   ├── login/index.html         # Login page');
+    console.log('   ├── category/index.html      # Category management');
+    console.log('   ├── topic/index.html         # Topic management');
+    console.log('   ├── bookmark/index.html      # Bookmark management');
+    console.log('   └── static/                  # Assets (JS, CSS)');
+    console.log('');
+    console.log('🌐 Server routing configuration:');
+    console.log('   /-/ln/         -> dist/index.html');
+    console.log('   /-/ln/login    -> dist/login/index.html');
+    console.log('   /-/ln/category -> dist/category/index.html');
+    console.log('   /-/ln/topic    -> dist/topic/index.html');
+    console.log('   /-/ln/bookmark -> dist/bookmark/index.html');
+    console.log('   /-/ln/static/* -> dist/static/*');
     
   } catch (error) {
     console.error('❌ Build failed:', error.message);

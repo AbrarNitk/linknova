@@ -7,8 +7,8 @@ pub fn routes() -> axum::Router {
 
 #[derive(serde::Deserialize, Debug)]
 pub struct LoginReq {
-    username: String,
-    password: String,
+    pub username: String,
+    pub password: String,
 }
 
 pub async fn login(axum::Json(req): axum::Json<LoginReq>) -> Response {
