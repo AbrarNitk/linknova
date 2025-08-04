@@ -94,7 +94,7 @@ const TopicsManager = {
         try {
             await this.loadTopics();
             this.setupEventListeners();
-            this.render();
+            this.renderTopicsList(); // Use existing HTML structure instead of render()
             
             console.log('✅ Topics Manager initialized successfully');
         } catch (error) {
@@ -131,14 +131,17 @@ const TopicsManager = {
         this.state.isLoading = isLoading;
         
         // Update loading indicators
-        const loadingElements = document.querySelectorAll('.topics-loading');
-        loadingElements.forEach(el => {
-            if (isLoading) {
-                el.classList.remove('hidden');
-            } else {
-                el.classList.add('hidden');
-            }
-        });
+        const loading = document.getElementById('topics-loading');
+        const grid = document.getElementById('topics-grid');
+        const empty = document.getElementById('topics-empty');
+        
+        if (isLoading) {
+            if (loading) loading.classList.remove('hidden');
+            if (grid) grid.classList.add('hidden');
+            if (empty) empty.classList.add('hidden');
+        } else {
+            if (loading) loading.classList.add('hidden');
+        }
     },
 
     /**
@@ -146,7 +149,7 @@ const TopicsManager = {
      */
     setupEventListeners() {
         // Search functionality
-        const searchInput = document.getElementById('topics-search');
+        const searchInput = document.getElementById('topic-search');
         if (searchInput) {
             searchInput.addEventListener('input', (e) => {
                 this.handleSearch(e.target.value);
@@ -154,11 +157,10 @@ const TopicsManager = {
         }
 
         // Sort functionality
-        const sortSelect = document.getElementById('topics-sort');
+        const sortSelect = document.getElementById('topic-sort');
         if (sortSelect) {
             sortSelect.addEventListener('change', (e) => {
-                const [sortBy, sortOrder] = e.target.value.split('-');
-                this.handleSort(sortBy, sortOrder);
+                this.handleSort(e.target.value);
             });
         }
     },
@@ -175,9 +177,17 @@ const TopicsManager = {
     /**
      * Handle sort
      */
-    handleSort(sortBy, sortOrder) {
-        this.state.sortBy = sortBy;
-        this.state.sortOrder = sortOrder;
+    handleSort(sortValue) {
+        // Map HTML select values to sort parameters
+        const sortMap = {
+            'name': { sortBy: 'name', sortOrder: 'asc' },
+            'created_on': { sortBy: 'created_on', sortOrder: 'desc' },
+            'priority': { sortBy: 'priority', sortOrder: 'desc' }
+        };
+        
+        const sortConfig = sortMap[sortValue] || sortMap.name;
+        this.state.sortBy = sortConfig.sortBy;
+        this.state.sortOrder = sortConfig.sortOrder;
         this.applyFiltersAndSort();
         this.renderTopicsList();
     },
@@ -469,10 +479,25 @@ const TopicsManager = {
      * Render only the topics list (for updates)
      */
     renderTopicsList() {
-        const container = document.getElementById('topics-list');
-        if (!container) return;
+        const grid = document.getElementById('topics-grid');
+        const loading = document.getElementById('topics-loading');
+        const empty = document.getElementById('topics-empty');
+        
+        if (!grid) return;
 
-        container.innerHTML = this.getTopicsListHTML();
+        // Hide loading
+        if (loading) loading.classList.add('hidden');
+
+        if (this.state.filteredTopics.length === 0) {
+            // Show empty state
+            grid.classList.add('hidden');
+            if (empty) empty.classList.remove('hidden');
+        } else {
+            // Show topics grid
+            if (empty) empty.classList.add('hidden');
+            grid.classList.remove('hidden');
+            grid.innerHTML = this.state.filteredTopics.map(topic => this.getTopicCardHTML(topic)).join('');
+        }
     },
 
     /**

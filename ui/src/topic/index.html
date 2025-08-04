@@ -118,7 +118,7 @@
                         Manage and organize your bookmark topics
                     </p>
                 </div>
-                <button onclick="showCreateModal()" class="btn-primary">
+                <button onclick="TopicsManager.showCreateModal()" class="btn-primary">
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                     </svg>
@@ -176,7 +176,7 @@
                     </svg>
                     <h3 class="text-lg font-medium text-neutral-900 dark:text-neutral-100 mb-2">No topics found</h3>
                     <p class="text-neutral-600 dark:text-neutral-400 mb-6">Get started by creating your first topic</p>
-                    <button onclick="showCreateModal()" class="btn-primary">
+                    <button onclick="TopicsManager.showCreateModal()" class="btn-primary">
                         Create Topic
                     </button>
                 </div>
@@ -188,14 +188,23 @@
     <div id="toast-container" class="fixed top-4 right-4 z-50 space-y-2"></div>
 
     <!-- Modals -->
-    <div id="topic-modals-container"></div>
+    <div id="modal-container"></div>
 
     <!-- Core Scripts -->
     <script src="/-/ln/static/js/utils.js"></script>
     <script src="/-/ln/static/js/api.js"></script>
-
+    <script src="/-/ln/static/js/components.js"></script>
     
-    <!-- Page Scripts -->
-    <script src="/-/ln/static/js/pages/topic.js"></script>
+    <!-- Topic-specific Scripts -->
+    <script src="/-/ln/static/js/category-api.js"></script>
+    <script src="/-/ln/static/js/category-input.js"></script>
+    <script src="/-/ln/static/js/topic.js"></script>
+    
+    <!-- Initialize Topic Manager -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            TopicsManager.init();
+        });
+    </script>
 </body>
 </html>
