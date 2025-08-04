@@ -2,7 +2,7 @@
 const API = {
     // Base configuration - using /-/ln prefix for all routes
     baseURL: '/-/ln', // All API routes will use /-/ln prefix
-    
+
     // Request timeout in milliseconds
     timeout: 10000,
 
@@ -34,7 +34,7 @@ const API = {
             }
 
             const response = await fetch(`${this.baseURL}${endpoint}`, config);
-            
+
             clearTimeout(timeoutId);
 
             console.log(`📋 Response details: status=${response.status}, type=${response.type}, redirected=${response.redirected}, url=${response.url}`);
@@ -45,7 +45,7 @@ const API = {
             // Handle different response types
             const contentType = response.headers.get('content-type');
             let data;
-            
+
             if (contentType && contentType.includes('application/json')) {
                 data = await response.json();
             } else {
@@ -63,15 +63,15 @@ const API = {
             return data;
         } catch (error) {
             clearTimeout(timeoutId);
-            
+
             if (error.name === 'AbortError') {
                 throw new APIError('Request timeout', 408);
             }
-            
+
             if (error instanceof APIError) {
                 throw error;
             }
-            
+
             // Network or other errors
             throw new APIError(
                 error.message || 'Network error occurred',

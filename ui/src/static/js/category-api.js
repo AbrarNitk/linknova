@@ -41,7 +41,7 @@ const Category = {
 
     /**
      * Remove categories from a topic
-     * @param {string} topicName - Topic name  
+     * @param {string} topicName - Topic name
      * @param {Array<string>} categories - Array of category names to remove
      * @returns {Promise<Object>} Result
      */
@@ -117,13 +117,13 @@ const Category = {
      */
     async search(query, limit = 10) {
         const allCategories = await this.getAll();
-        
+
         if (!query || query.trim() === '') {
             return allCategories.slice(0, limit);
         }
 
         const searchTerm = query.toLowerCase().trim();
-        const filtered = allCategories.filter(category => 
+        const filtered = allCategories.filter(category =>
             category.name.toLowerCase().includes(searchTerm) ||
             (category.display_name && category.display_name.toLowerCase().includes(searchTerm)) ||
             (category.description && category.description.toLowerCase().includes(searchTerm))

@@ -96,3 +96,27 @@ pub struct TopicCreateReq {
 - on-click topic-card shw the information about the topic
  - on the topic-card we can edit the topic information
  - we can add and remove the categories
+
+
+ ## Categories
+
+ Categories are same as topic but they are mapped to bookmark. A category can be included in the
+ n number of topics and also n number of bookmark.
+
+ Categories are to caategories the url so they become easy to search by caegorization, topics are to
+ categories the category.
+
+
+ ## Category UI
+
+On the category home page we have different components
+- listing the categories
+- search category by name, filter categories by topic
+- create category
+- each category-card have its own information with number of topics
+  - on the category-card we can edit the category details
+  - on the category-card we can see the all the added topics
+  - we can remove the topics
+  - we can add the topics
+- You must be professional UI/UX, add any details if I have missed anything form the UI
+  perspective.

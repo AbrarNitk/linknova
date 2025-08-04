@@ -90,12 +90,12 @@ const TopicsManager = {
      */
     async init() {
         console.log('🚀 Initializing Topics Manager...');
-        
+
         try {
             await this.loadTopics();
             this.setupEventListeners();
             this.renderTopicsList(); // Use existing HTML structure instead of render()
-            
+
             console.log('✅ Topics Manager initialized successfully');
         } catch (error) {
             console.error('❌ Failed to initialize Topics Manager:', error);
@@ -108,7 +108,7 @@ const TopicsManager = {
      */
     async loadTopics() {
         this.setLoading(true);
-        
+
         try {
             const topics = await Topic.getAll();
             this.state.topics = topics || [];
@@ -129,18 +129,18 @@ const TopicsManager = {
      */
     setLoading(isLoading) {
         this.state.isLoading = isLoading;
-        
+
         // Update loading indicators
         const loading = document.getElementById('topics-loading');
         const grid = document.getElementById('topics-grid');
         const empty = document.getElementById('topics-empty');
-        
+
         if (isLoading) {
-            if (loading) loading.classList.remove('hidden');
-            if (grid) grid.classList.add('hidden');
-            if (empty) empty.classList.add('hidden');
+            if (loading) {loading.classList.remove('hidden');}
+            if (grid) {grid.classList.add('hidden');}
+            if (empty) {empty.classList.add('hidden');}
         } else {
-            if (loading) loading.classList.add('hidden');
+            if (loading) {loading.classList.add('hidden');}
         }
     },
 
@@ -184,7 +184,7 @@ const TopicsManager = {
             'created_on': { sortBy: 'created_on', sortOrder: 'desc' },
             'priority': { sortBy: 'priority', sortOrder: 'desc' }
         };
-        
+
         const sortConfig = sortMap[sortValue] || sortMap.name;
         this.state.sortBy = sortConfig.sortBy;
         this.state.sortOrder = sortConfig.sortOrder;
@@ -200,7 +200,7 @@ const TopicsManager = {
 
         // Apply search filter
         if (this.state.searchQuery) {
-            filtered = filtered.filter(topic => 
+            filtered = filtered.filter(topic =>
                 topic.name.toLowerCase().includes(this.state.searchQuery) ||
                 (topic.display_name && topic.display_name.toLowerCase().includes(this.state.searchQuery)) ||
                 (topic.description && topic.description.toLowerCase().includes(this.state.searchQuery)) ||
@@ -211,7 +211,7 @@ const TopicsManager = {
         // Apply sorting
         filtered.sort((a, b) => {
             let aVal, bVal;
-            
+
             switch (this.state.sortBy) {
                 case 'priority':
                     aVal = a.priority;
@@ -230,8 +230,8 @@ const TopicsManager = {
                     bVal = (b.display_name || b.name).toLowerCase();
             }
 
-            if (aVal < bVal) return this.state.sortOrder === 'asc' ? -1 : 1;
-            if (aVal > bVal) return this.state.sortOrder === 'asc' ? 1 : -1;
+            if (aVal < bVal) {return this.state.sortOrder === 'asc' ? -1 : 1;}
+            if (aVal > bVal) {return this.state.sortOrder === 'asc' ? 1 : -1;}
             return 0;
         });
 
@@ -243,7 +243,7 @@ const TopicsManager = {
      */
     render() {
         const container = document.getElementById('page-content');
-        if (!container) return;
+        if (!container) {return;}
 
         container.innerHTML = this.getTopicsPageHTML();
         this.setupEventListeners();
@@ -439,7 +439,7 @@ const TopicsManager = {
      */
     getEmptyStateHTML() {
         const hasSearchQuery = this.state.searchQuery.length > 0;
-        
+
         return `
             <div class="text-center py-16">
                 <div class="w-24 h-24 mx-auto mb-6 bg-neutral-100 dark:bg-neutral-700 rounded-full flex items-center justify-center">
@@ -453,7 +453,7 @@ const TopicsManager = {
                 </h3>
                 
                 <p class="text-neutral-600 dark:text-neutral-400 mb-6 max-w-md mx-auto">
-                    ${hasSearchQuery 
+                    ${hasSearchQuery
                         ? `No topics match your search "${this.state.searchQuery}". Try adjusting your search terms.`
                         : 'Get started by creating your first topic to organize your bookmarks.'
                     }
@@ -482,19 +482,19 @@ const TopicsManager = {
         const grid = document.getElementById('topics-grid');
         const loading = document.getElementById('topics-loading');
         const empty = document.getElementById('topics-empty');
-        
-        if (!grid) return;
+
+        if (!grid) {return;}
 
         // Hide loading
-        if (loading) loading.classList.add('hidden');
+        if (loading) {loading.classList.add('hidden');}
 
         if (this.state.filteredTopics.length === 0) {
             // Show empty state
             grid.classList.add('hidden');
-            if (empty) empty.classList.remove('hidden');
+            if (empty) {empty.classList.remove('hidden');}
         } else {
             // Show topics grid
-            if (empty) empty.classList.add('hidden');
+            if (empty) {empty.classList.add('hidden');}
             grid.classList.remove('hidden');
             grid.innerHTML = this.state.filteredTopics.map(topic => this.getTopicCardHTML(topic)).join('');
         }
@@ -524,11 +524,11 @@ const TopicsManager = {
     showTopicDetailModal(topic) {
         // Store current topic for reference
         this.currentTopic = { ...topic };
-        
+
         // Debug logging to track category data
         console.log('Topic data in showTopicDetailModal:', topic);
         console.log('Categories data:', topic.categories);
-        
+
         const modal = Components.modal({
             title: topic.display_name || topic.name,
             size: 'xl', // Made larger to accommodate category management
@@ -582,7 +582,7 @@ const TopicsManager = {
                             </span>
                             
                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                                ${topic.public 
+                                ${topic.public
                                     ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
                                     : 'bg-neutral-100 text-neutral-800 dark:bg-neutral-700 dark:text-neutral-300'
                                 }">
@@ -705,7 +705,7 @@ const TopicsManager = {
      */
     getInitialCategoriesHTML(categories) {
         console.log('getInitialCategoriesHTML called with:', categories);
-        
+
         if (!categories || categories.length === 0) {
             console.log('No categories found, showing empty state');
             return `
@@ -756,7 +756,7 @@ const TopicsManager = {
     setupCategoryManagement(topic, modal) {
         console.log('setupCategoryManagement called with topic:', topic);
         console.log('Topic categories:', topic.categories);
-        
+
         // Track pending changes
         this.pendingChanges = {
             topic: topic,
@@ -765,9 +765,9 @@ const TopicsManager = {
             toAdd: [],
             toRemove: []
         };
-        
+
         console.log('Pending changes initialized:', this.pendingChanges);
-        
+
         // Initialize CategoryInput component with batched handlers
         CategoryInput.init(
             'add-category-input',
@@ -803,7 +803,7 @@ const TopicsManager = {
 
         // Initial UI update - categories already rendered in HTML, just update pending changes UI
         this.updatePendingChangesUI();
-        
+
         // Safety check: If categories container is empty, re-render
         const container = document.getElementById('topic-categories-list');
         if (container && container.innerHTML.trim() === '') {
@@ -816,25 +816,25 @@ const TopicsManager = {
      * Handle batched category addition
      */
     handleBatchedCategoryAdd(categoryName) {
-        if (!this.pendingChanges) return;
-        
+        if (!this.pendingChanges) {return;}
+
         // Add to currentCategories if not already there
         if (!this.pendingChanges.currentCategories.includes(categoryName)) {
             this.pendingChanges.currentCategories.push(categoryName);
         }
-        
+
         // Remove from toRemove if it was there (undo removal)
         const removeIndex = this.pendingChanges.toRemove.indexOf(categoryName);
         if (removeIndex > -1) {
             this.pendingChanges.toRemove.splice(removeIndex, 1);
         } else {
             // Add to toAdd if it's not in original categories
-            if (!this.pendingChanges.originalCategories.includes(categoryName) && 
+            if (!this.pendingChanges.originalCategories.includes(categoryName) &&
                 !this.pendingChanges.toAdd.includes(categoryName)) {
                 this.pendingChanges.toAdd.push(categoryName);
             }
         }
-        
+
         // Re-render categories in UI
         this.renderCurrentCategories();
         this.updatePendingChangesUI();
@@ -844,26 +844,26 @@ const TopicsManager = {
      * Handle batched category removal
      */
     handleBatchedCategoryRemove(categoryName) {
-        if (!this.pendingChanges) return;
-        
+        if (!this.pendingChanges) {return;}
+
         // Remove from currentCategories
         const currentIndex = this.pendingChanges.currentCategories.indexOf(categoryName);
         if (currentIndex > -1) {
             this.pendingChanges.currentCategories.splice(currentIndex, 1);
         }
-        
+
         // Remove from toAdd if it was there (undo addition)
         const addIndex = this.pendingChanges.toAdd.indexOf(categoryName);
         if (addIndex > -1) {
             this.pendingChanges.toAdd.splice(addIndex, 1);
         } else {
             // Add to toRemove if it's in original categories
-            if (this.pendingChanges.originalCategories.includes(categoryName) && 
+            if (this.pendingChanges.originalCategories.includes(categoryName) &&
                 !this.pendingChanges.toRemove.includes(categoryName)) {
                 this.pendingChanges.toRemove.push(categoryName);
             }
         }
-        
+
         // Re-render categories in UI
         this.renderCurrentCategories();
         this.updatePendingChangesUI();
@@ -873,15 +873,15 @@ const TopicsManager = {
      * Re-render the current categories in the UI
      */
     renderCurrentCategories() {
-        if (!this.pendingChanges) return;
-        
+        if (!this.pendingChanges) {return;}
+
         console.log('renderCurrentCategories called with:', this.pendingChanges.currentCategories);
-        
+
         const container = document.getElementById('topic-categories-list');
         if (container) {
             CategoryInput.renderExistingCategories(
-                container, 
-                this.pendingChanges.currentCategories, 
+                container,
+                this.pendingChanges.currentCategories,
                 (categoryName) => {
                     this.handleBatchedCategoryRemove(categoryName);
                 }
@@ -893,7 +893,7 @@ const TopicsManager = {
      * Update the UI to show pending changes
      */
     updatePendingChangesUI() {
-        if (!this.pendingChanges) return;
+        if (!this.pendingChanges) {return;}
 
         const pendingIndicator = document.getElementById('pending-changes-indicator');
         const changesSummary = document.getElementById('changes-summary');
@@ -919,22 +919,22 @@ const TopicsManager = {
             if (changesSummary) {
                 const addCount = this.pendingChanges.toAdd.length;
                 const removeCount = this.pendingChanges.toRemove.length;
-                let summary = [];
-                
+                const summary = [];
+
                 if (addCount > 0) {
                     summary.push(`+${addCount} to add`);
                 }
                 if (removeCount > 0) {
                     summary.push(`-${removeCount} to remove`);
                 }
-                
+
                 changesSummary.textContent = summary.join(', ');
                 changesSummary.classList.add('text-orange-600', 'dark:text-orange-400');
             }
 
             // Show save/discard buttons
-            if (saveBtn) saveBtn.classList.remove('hidden');
-            if (discardBtn) discardBtn.classList.remove('hidden');
+            if (saveBtn) {saveBtn.classList.remove('hidden');}
+            if (discardBtn) {discardBtn.classList.remove('hidden');}
 
         } else {
             // Hide pending changes indicator
@@ -949,8 +949,8 @@ const TopicsManager = {
             }
 
             // Hide save/discard buttons
-            if (saveBtn) saveBtn.classList.add('hidden');
-            if (discardBtn) discardBtn.classList.add('hidden');
+            if (saveBtn) {saveBtn.classList.add('hidden');}
+            if (discardBtn) {discardBtn.classList.add('hidden');}
         }
     },
 
@@ -981,11 +981,11 @@ const TopicsManager = {
 
             // Make API calls for additions and removals
             const promises = [];
-            
+
             if (this.pendingChanges.toAdd.length > 0) {
                 promises.push(Category.addToTopic(topicName, this.pendingChanges.toAdd));
             }
-            
+
             if (this.pendingChanges.toRemove.length > 0) {
                 promises.push(Category.removeFromTopic(topicName, this.pendingChanges.toRemove));
             }
@@ -996,7 +996,7 @@ const TopicsManager = {
             const topicIndex = this.state.topics.findIndex(t => t.name === topicName);
             if (topicIndex !== -1) {
                 this.state.topics[topicIndex].categories = [...this.pendingChanges.currentCategories];
-                
+
                 // Update filtered topics
                 this.state.filteredTopics = [...this.state.topics];
                 this.applyFiltersAndSort();
@@ -1033,7 +1033,7 @@ const TopicsManager = {
      * Discard all pending category changes
      */
     discardCategoryChanges() {
-        if (!this.pendingChanges) return;
+        if (!this.pendingChanges) {return;}
 
         // Reset to original categories
         this.pendingChanges.currentCategories = [...this.pendingChanges.originalCategories];
@@ -1130,7 +1130,7 @@ const TopicsManager = {
     async handleCreateTopic(modal) {
         const form = document.getElementById('create-topic-form');
         const formData = new FormData(form);
-        
+
         const data = {
             name: formData.get('name').trim(),
             display_name: formData.get('display_name').trim() || null,
@@ -1156,11 +1156,11 @@ const TopicsManager = {
             await Topic.create(data);
             Utils.showToast('Topic created successfully', 'success');
             modal.hide();
-            
+
             // Reload topics list
             await this.loadTopics();
             this.renderTopicsList();
-            
+
         } catch (error) {
             console.error('Error creating topic:', error);
             Utils.showToast(error.message || 'Failed to create topic', 'error');
@@ -1175,7 +1175,7 @@ const TopicsManager = {
             // First close any existing modals
             const existingModals = document.querySelectorAll('.modal-overlay:not(.hidden)');
             existingModals.forEach(modal => modal.classList.add('hidden'));
-            
+
             // Load fresh topic data
             const topic = await Topic.getByName(topicName);
             this.showEditModal(topic);
@@ -1268,7 +1268,7 @@ const TopicsManager = {
     async handleUpdateTopic(topicName, modal) {
         const form = document.getElementById('edit-topic-form');
         const formData = new FormData(form);
-        
+
         const data = {
             display_name: formData.get('display_name').trim() || null,
             description: formData.get('description').trim() || null,
@@ -1281,11 +1281,11 @@ const TopicsManager = {
             await Topic.update(topicName, data);
             Utils.showToast('Topic updated successfully', 'success');
             modal.hide();
-            
+
             // Reload topics list
             await this.loadTopics();
             this.renderTopicsList();
-            
+
         } catch (error) {
             console.error('Error updating topic:', error);
             Utils.showToast(error.message || 'Failed to update topic', 'error');
@@ -1324,14 +1324,14 @@ const TopicsManager = {
                     // Close any existing modals first
                     const existingModals = document.querySelectorAll('.modal-overlay:not(.hidden)');
                     existingModals.forEach(modal => modal.classList.add('hidden'));
-                    
+
                     await Topic.delete(topicName);
                     Utils.showToast('Topic deleted successfully', 'success');
-                    
+
                     // Reload topics list
                     await this.loadTopics();
                     this.renderTopicsList();
-                    
+
                 } catch (error) {
                     console.error('Error deleting topic:', error);
                     Utils.showToast(error.message || 'Failed to delete topic', 'error');

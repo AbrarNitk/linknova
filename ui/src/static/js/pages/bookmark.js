@@ -2,14 +2,14 @@
 async function loadPage() {
     try {
         const response = await fetch('/-/ln/v1/api/bm');
-        
+
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
-        
+
         const data = await response.json();
         console.log('API Response:', data); // Debug log
-        
+
         // Handle different response formats
         let bookmarks = [];
         if (Array.isArray(data)) {
@@ -19,18 +19,18 @@ async function loadPage() {
         } else if (data && Array.isArray(data.bookmarks)) {
             bookmarks = data.bookmarks;
         }
-        
+
         const grid = document.getElementById('bookmarks-grid');
         const loading = document.getElementById('bookmarks-loading');
         const empty = document.getElementById('bookmarks-empty');
-        
+
         loading.classList.add('hidden');
-        
+
         if (bookmarks.length === 0) {
             empty.classList.remove('hidden');
             return;
         }
-        
+
         grid.innerHTML = bookmarks.map(bookmark => `
             <div class="card">
                 <div class="card-body">
@@ -45,9 +45,9 @@ async function loadPage() {
                 </div>
             </div>
         `).join('');
-        
+
         grid.classList.remove('hidden');
-        
+
     } catch (error) {
         console.error('Error loading bookmarks:', error);
         document.getElementById('bookmarks-loading').innerHTML = '<p class="text-red-600">Error loading bookmarks: ' + error.message + '</p>';

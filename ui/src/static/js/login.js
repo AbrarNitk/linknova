@@ -34,12 +34,12 @@ const LoginPage = {
     },
 
     async handleLogin() {
-        if (this.state.isLoading) return;
+        if (this.state.isLoading) {return;}
 
         const usernameInput = document.getElementById('username');
         const passwordInput = document.getElementById('password');
         const rememberMeInput = document.getElementById('remember-me');
-        
+
         const username = usernameInput?.value?.trim() || '';
         const password = passwordInput?.value || '';
         const rememberMe = rememberMeInput?.checked || false;
@@ -76,7 +76,7 @@ const LoginPage = {
             }
 
             const data = await response.json();
-            
+
             if (response.ok) {
                 // Success - but no redirect, show message
                 Utils.showToast('Login successful!', 'success');
@@ -111,7 +111,7 @@ const LoginPage = {
 
     setLoading(isLoading) {
         this.state.isLoading = isLoading;
-        
+
         const loginButton = document.getElementById('login-button');
         const loginText = document.getElementById('login-text');
         const loginSpinner = document.getElementById('login-spinner');
@@ -130,7 +130,7 @@ const LoginPage = {
     showError(message) {
         const errorAlert = document.getElementById('error-alert');
         const errorMessage = document.getElementById('error-message');
-        
+
         errorMessage.textContent = message;
         errorAlert.classList.remove('hidden');
     },

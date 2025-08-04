@@ -43,7 +43,7 @@ const Utils = {
      */
     showToast(message, type = 'info', duration = 5000) {
         const container = document.getElementById('toast-container');
-        if (!container) return;
+        if (!container) {return;}
 
         const toastId = 'toast-' + Date.now();
         const iconMap = {
@@ -106,11 +106,11 @@ const Utils = {
      */
     dismissToast(toastId) {
         const toast = document.getElementById(toastId);
-        if (!toast) return;
+        if (!toast) {return;}
 
         toast.classList.add('translate-x-full', 'opacity-0');
         toast.classList.remove('translate-x-0', 'opacity-100');
-        
+
         setTimeout(() => {
             if (toast.parentNode) {
                 toast.parentNode.removeChild(toast);
@@ -125,15 +125,15 @@ const Utils = {
      * @returns {string} Formatted date string
      */
     formatDate(date, options = {}) {
-        if (!date) return '';
-        
+        if (!date) {return '';}
+
         const dateObj = typeof date === 'string' ? new Date(date) : date;
         const defaultOptions = {
             year: 'numeric',
             month: 'short',
             day: 'numeric'
         };
-        
+
         return new Intl.DateTimeFormat('en-US', { ...defaultOptions, ...options }).format(dateObj);
     },
 
@@ -143,12 +143,12 @@ const Utils = {
      * @returns {string} Relative time string
      */
     formatRelativeTime(date) {
-        if (!date) return '';
-        
+        if (!date) {return '';}
+
         const dateObj = typeof date === 'string' ? new Date(date) : date;
         const now = new Date();
         const diffInSeconds = Math.floor((now - dateObj) / 1000);
-        
+
         const intervals = [
             { label: 'year', seconds: 31536000 },
             { label: 'month', seconds: 2592000 },
@@ -157,14 +157,14 @@ const Utils = {
             { label: 'hour', seconds: 3600 },
             { label: 'minute', seconds: 60 }
         ];
-        
+
         for (const interval of intervals) {
             const count = Math.floor(diffInSeconds / interval.seconds);
             if (count > 0) {
                 return `${count} ${interval.label}${count !== 1 ? 's' : ''} ago`;
             }
         }
-        
+
         return 'Just now';
     },
 
@@ -174,8 +174,8 @@ const Utils = {
      * @returns {string} Sanitized string
      */
     sanitizeHTML(str) {
-        if (!str) return '';
-        
+        if (!str) {return '';}
+
         const div = document.createElement('div');
         div.textContent = str;
         return div.innerHTML;
@@ -187,8 +187,8 @@ const Utils = {
      * @returns {string} Escaped string
      */
     escapeHTML(str) {
-        if (!str) return '';
-        
+        if (!str) {return '';}
+
         const div = document.createElement('div');
         div.appendChild(document.createTextNode(str));
         return div.innerHTML;
@@ -214,8 +214,8 @@ const Utils = {
      * @returns {boolean} Whether the URL is valid
      */
     isValidURL(url) {
-        if (!url) return false;
-        
+        if (!url) {return false;}
+
         try {
             new URL(url);
             return true;
@@ -230,8 +230,8 @@ const Utils = {
      * @returns {string} Domain name
      */
     extractDomain(url) {
-        if (!url) return '';
-        
+        if (!url) {return '';}
+
         try {
             const parsed = new URL(url);
             return parsed.hostname;
@@ -248,7 +248,7 @@ const Utils = {
      * @returns {string} Truncated text
      */
     truncateText(text, maxLength, suffix = '...') {
-        if (!text || text.length <= maxLength) return text;
+        if (!text || text.length <= maxLength) {return text;}
         return text.substring(0, maxLength) + suffix;
     },
 
@@ -258,9 +258,9 @@ const Utils = {
      * @returns {Object} Cloned object
      */
     deepClone(obj) {
-        if (obj === null || typeof obj !== 'object') return obj;
-        if (obj instanceof Date) return new Date(obj.getTime());
-        if (obj instanceof Array) return obj.map(item => this.deepClone(item));
+        if (obj === null || typeof obj !== 'object') {return obj;}
+        if (obj instanceof Date) {return new Date(obj.getTime());}
+        if (obj instanceof Array) {return obj.map(item => this.deepClone(item));}
         if (typeof obj === 'object') {
             const clonedObj = {};
             for (const key in obj) {
@@ -278,8 +278,8 @@ const Utils = {
      * @returns {boolean} Whether element is in viewport
      */
     isInViewport(element) {
-        if (!element) return false;
-        
+        if (!element) {return false;}
+
         const rect = element.getBoundingClientRect();
         return (
             rect.top >= 0 &&
@@ -296,11 +296,11 @@ const Utils = {
      */
     scrollToElement(target, offset = 0) {
         const element = typeof target === 'string' ? document.querySelector(target) : target;
-        if (!element) return;
-        
+        if (!element) {return;}
+
         const elementPosition = element.getBoundingClientRect().top;
         const offsetPosition = elementPosition + window.pageYOffset - offset;
-        
+
         window.scrollTo({
             top: offsetPosition,
             behavior: 'smooth'
@@ -380,9 +380,9 @@ const Utils = {
             const savedTheme = Utils.storage.get('theme');
             const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
             const theme = savedTheme || systemTheme;
-            
+
             this.set(theme);
-            
+
             // Listen for system theme changes
             window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
                 if (!Utils.storage.get('theme')) {

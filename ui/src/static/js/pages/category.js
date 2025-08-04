@@ -2,14 +2,14 @@
 async function loadPage() {
     try {
         const response = await fetch('/-/ln/v1/api/cat');
-        
+
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
-        
+
         const data = await response.json();
         console.log('API Response:', data); // Debug log
-        
+
         // Handle different response formats
         let categories = [];
         if (Array.isArray(data)) {
@@ -19,18 +19,18 @@ async function loadPage() {
         } else if (data && Array.isArray(data.categories)) {
             categories = data.categories;
         }
-        
+
         const grid = document.getElementById('categories-grid');
         const loading = document.getElementById('categories-loading');
         const empty = document.getElementById('categories-empty');
-        
+
         loading.classList.add('hidden');
-        
+
         if (categories.length === 0) {
             empty.classList.remove('hidden');
             return;
         }
-        
+
         grid.innerHTML = categories.map(cat => `
             <div class="card">
                 <div class="card-body">
@@ -42,9 +42,9 @@ async function loadPage() {
                 </div>
             </div>
         `).join('');
-        
+
         grid.classList.remove('hidden');
-        
+
     } catch (error) {
         console.error('Error loading categories:', error);
         document.getElementById('categories-loading').innerHTML = '<p class="text-red-600">Error loading categories: ' + error.message + '</p>';

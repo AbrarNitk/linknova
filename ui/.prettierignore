@@ -1,0 +1,30 @@
+# Dependencies
+node_modules/
+
+# Generated files
+src/static/css/styles.css
+dist/
+
+# Build outputs
+*.min.js
+*.min.css
+
+# Package files
+package-lock.json
+yarn.lock
+
+# IDE files
+.vscode/
+.idea/
+
+# OS files  
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Cache directories
+.cache/
+.temp/
+.tmp/

@@ -15,19 +15,19 @@ const App = {
      */
     async init() {
         console.log('🚀 Initializing LinkNova utilities...');
-        
+
         try {
             // Initialize theme system
             Utils.theme.init();
-            
+
             // Check authentication status
             await this.checkAuthentication();
-            
+
             // Setup global event listeners
             this.setupEventListeners();
-            
+
             console.log('✅ LinkNova utilities initialized');
-            
+
         } catch (error) {
             console.error('❌ Failed to initialize LinkNova utilities:', error);
             Utils.showToast('Failed to initialize application', 'error');
@@ -41,19 +41,19 @@ const App = {
         try {
             // Ask backend if user is authenticated (checks HttpOnly cookies)
             const authStatus = await API.auth.checkStatus();
-            
+
             if (authStatus.isAuthenticated) {
                 this.state.isAuthenticated = true;
                 this.state.user = authStatus.user;
-                
+
                 // Update UI with user information
                 this.updateUserInterface();
-                
+
                 return true;
             }
-            
+
             return false;
-            
+
         } catch (error) {
             // User is not authenticated or session expired
             console.log('User not authenticated:', error.message);
@@ -77,17 +77,17 @@ const App = {
         try {
             // Call backend logout endpoint
             await API.auth.logout();
-            
+
             // Clear local state
             this.clearAuthentication();
-            
+
             // Redirect to login page
             window.location.href = '/-/ln/login';
-            
+
         } catch (error) {
             console.error('Logout error:', error);
             Utils.showToast('Error during logout', 'error');
-            
+
             // Force redirect to login even if logout API fails
             window.location.href = '/-/ln/login';
         }
@@ -97,7 +97,7 @@ const App = {
      * Update user interface with authentication info
      */
     updateUserInterface() {
-        if (!this.state.user) return;
+        if (!this.state.user) {return;}
 
         // Update user name in header
         const userNameEl = document.getElementById('user-name');
@@ -120,7 +120,7 @@ const App = {
         // Global error handling
         window.addEventListener('unhandledrejection', (e) => {
             console.error('Unhandled promise rejection:', e.reason);
-            
+
             // Show user-friendly error message
             if (e.reason instanceof APIError) {
                 if (e.reason.isNetworkError) {
@@ -139,7 +139,7 @@ const App = {
         document.addEventListener('click', (e) => {
             const userMenu = document.getElementById('user-menu');
             const userDropdown = document.getElementById('user-dropdown');
-            
+
             if (userMenu && userDropdown && !userMenu.contains(e.target)) {
                 userDropdown.classList.add('hidden');
             }
@@ -170,7 +170,7 @@ document.addEventListener('DOMContentLoaded', () => {
                            window.location.pathname.includes('/-/ln/category') ||
                            window.location.pathname.includes('/-/ln/topic') ||
                            window.location.pathname.includes('/-/ln/bookmark');
-    
+
     if (!isDedicatedPage) {
         App.init();
     }

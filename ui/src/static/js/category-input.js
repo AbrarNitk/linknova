@@ -100,10 +100,10 @@ const CategoryInput = {
      */
     handleAddCategory() {
         const input = document.getElementById(this.state.inputId);
-        if (!input) return;
+        if (!input) {return;}
 
         const categoryName = input.value.trim();
-        if (!categoryName) return;
+        if (!categoryName) {return;}
 
         // Check if category is already added
         if (this.state.currentCategories.includes(categoryName)) {
@@ -150,19 +150,19 @@ const CategoryInput = {
      */
     showAutocomplete(query) {
         const input = document.getElementById(this.state.inputId);
-        if (!input || this.state.allCategories.length === 0) return;
+        if (!input || this.state.allCategories.length === 0) {return;}
 
         // Filter categories based on query
         const filtered = this.state.allCategories.filter(category => {
             const name = category.name.toLowerCase();
             const displayName = (category.display_name || '').toLowerCase();
             const queryLower = query.toLowerCase();
-            
+
             // Don't show already added categories
             if (this.state.currentCategories.includes(category.name)) {
                 return false;
             }
-            
+
             return name.includes(queryLower) || displayName.includes(queryLower);
         }).slice(0, 8); // Limit to 8 suggestions
 
@@ -213,7 +213,7 @@ const CategoryInput = {
         }).join('');
 
         // Add option to create new category if query doesn't match exactly
-        const exactMatch = categories.find(cat => 
+        const exactMatch = categories.find(cat =>
             cat.name.toLowerCase() === query.toLowerCase() ||
             (cat.display_name && cat.display_name.toLowerCase() === query.toLowerCase())
         );
@@ -241,7 +241,7 @@ const CategoryInput = {
         // Position dropdown relative to input
         const inputRect = input.getBoundingClientRect();
         const inputParent = input.offsetParent || input.parentElement;
-        
+
         // Make input parent relative positioned if not already
         const parentStyle = window.getComputedStyle(inputParent);
         if (parentStyle.position === 'static') {

@@ -78,11 +78,11 @@ const Components = {
         const modal = {
             element: modalElement,
             id: modalId,
-            
+
             show() {
                 modalElement.classList.remove('hidden');
                 document.body.style.overflow = 'hidden';
-                
+
                 // Focus trap
                 const focusableElements = modalElement.querySelectorAll(
                     'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
@@ -90,55 +90,55 @@ const Components = {
                 if (focusableElements.length > 0) {
                     focusableElements[0].focus();
                 }
-                
-                if (config.onShow) config.onShow(modal);
-                
+
+                if (config.onShow) {config.onShow(modal);}
+
                 return this;
             },
-            
+
             hide() {
                 modalElement.classList.add('hidden');
                 document.body.style.overflow = '';
-                
-                if (config.onHide) config.onHide(modal);
-                
+
+                if (config.onHide) {config.onHide(modal);}
+
                 return this;
             },
-            
+
             destroy() {
                 this.hide();
                 modalElement.remove();
                 delete Components.modalInstances[modalId];
-                
+
                 return this;
             },
-            
+
             confirm() {
                 if (config.onConfirm) {
                     const result = config.onConfirm(modal);
-                    if (result !== false) this.hide();
+                    if (result !== false) {this.hide();}
                 } else {
                     this.hide();
                 }
-                
+
                 return this;
             },
-            
+
             updateContent(content) {
                 const contentDiv = modalElement.querySelector('.card-body');
                 if (contentDiv) {
                     contentDiv.innerHTML = content;
                 }
-                
+
                 return this;
             },
-            
+
             updateTitle(title) {
                 const titleElement = modalElement.querySelector('.card-header h3');
                 if (titleElement) {
                     titleElement.textContent = title;
                 }
-                
+
                 return this;
             },
 
@@ -193,7 +193,7 @@ const Components = {
                     resolve(false);
                 }
             });
-            
+
             modal.show();
         });
     },
@@ -219,7 +219,7 @@ const Components = {
                     resolve();
                 }
             });
-            
+
             modal.show();
         });
     },
@@ -271,28 +271,28 @@ const Components = {
         return {
             element: spinnerElement,
             id: spinnerId,
-            
+
             show() {
                 spinnerElement.classList.remove('hidden');
                 return this;
             },
-            
+
             hide() {
                 spinnerElement.classList.add('hidden');
                 return this;
             },
-            
+
             destroy() {
                 spinnerElement.remove();
                 return this;
             },
-            
+
             updateText(text) {
                 const textElement = spinnerElement.querySelector('span');
                 if (textElement) {
                     textElement.textContent = text;
                 } else if (text) {
-                    spinnerElement.insertAdjacentHTML('beforeend', 
+                    spinnerElement.insertAdjacentHTML('beforeend',
                         `<span class="text-sm text-neutral-600 dark:text-neutral-400">${text}</span>`
                     );
                 }
@@ -338,7 +338,7 @@ const Components = {
                         if (item.divider) {
                             return '<div class="border-t border-neutral-200 dark:border-neutral-700 my-1"></div>';
                         }
-                        
+
                         return `
                             <button class="dropdown-item w-full text-left px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-700 flex items-center ${item.disabled ? 'opacity-50 cursor-not-allowed' : ''}" 
                                     data-index="${index}" 
@@ -368,10 +368,10 @@ const Components = {
             e.stopPropagation();
             const index = parseInt(e.currentTarget.dataset.index);
             const item = config.items[index];
-            
+
             if (item && !item.disabled) {
-                if (config.onSelect) config.onSelect(item, index);
-                if (config.closeOnClick) dropdown.hide();
+                if (config.onSelect) {config.onSelect(item, index);}
+                if (config.closeOnClick) {dropdown.hide();}
             }
         };
 
@@ -389,22 +389,22 @@ const Components = {
         const dropdown = {
             element: dropdownElement,
             id: dropdownId,
-            
+
             show() {
                 dropdownElement.classList.remove('hidden');
                 return this;
             },
-            
+
             hide() {
                 dropdownElement.classList.add('hidden');
                 return this;
             },
-            
+
             toggle() {
                 dropdownElement.classList.toggle('hidden');
                 return this;
             },
-            
+
             destroy() {
                 config.trigger.removeEventListener('click', handleTriggerClick);
                 dropdownElement.removeEventListener('click', handleItemClick);
@@ -412,7 +412,7 @@ const Components = {
                 dropdownElement.remove();
                 return this;
             },
-            
+
             updateItems(items) {
                 config.items = items;
                 const container = dropdownElement.querySelector('.py-1');
@@ -420,7 +420,7 @@ const Components = {
                     if (item.divider) {
                         return '<div class="border-t border-neutral-200 dark:border-neutral-700 my-1"></div>';
                     }
-                    
+
                     return `
                         <button class="dropdown-item w-full text-left px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-700 flex items-center ${item.disabled ? 'opacity-50 cursor-not-allowed' : ''}" 
                                 data-index="${index}" 
@@ -464,8 +464,8 @@ const Components = {
                     <nav class="flex space-x-8">
                         ${config.tabs.map((tab, index) => `
                             <button class="tab-button py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
-                                index === config.activeTab 
-                                    ? 'border-brand-500 text-brand-600 dark:text-brand-400' 
+                                index === config.activeTab
+                                    ? 'border-brand-500 text-brand-600 dark:text-brand-400'
                                     : 'border-transparent text-neutral-500 hover:text-neutral-700 hover:border-neutral-300 dark:text-neutral-400 dark:hover:text-neutral-300'
                             }" data-index="${index}">
                                 ${tab.icon ? `<span class="mr-2">${tab.icon}</span>` : ''}
@@ -502,21 +502,21 @@ const Components = {
             element: tabsElement,
             id: tabsId,
             activeIndex: config.activeTab,
-            
+
             setActive(index) {
-                if (index < 0 || index >= config.tabs.length) return this;
-                
+                if (index < 0 || index >= config.tabs.length) {return this;}
+
                 // Update buttons
                 tabsElement.querySelectorAll('.tab-button').forEach((button, i) => {
                     if (i === index) {
                         button.classList.add('border-brand-500', 'text-brand-600', 'dark:text-brand-400');
                         button.classList.remove('border-transparent', 'text-neutral-500', 'dark:text-neutral-400');
                     } else {
-                        button.classList.remove('border-brand-500', 'text-brand-600', 'dark:text-brand-400');  
+                        button.classList.remove('border-brand-500', 'text-brand-600', 'dark:text-brand-400');
                         button.classList.add('border-transparent', 'text-neutral-500', 'dark:text-neutral-400');
                     }
                 });
-                
+
                 // Update panes
                 tabsElement.querySelectorAll('.tab-pane').forEach((pane, i) => {
                     if (i === index) {
@@ -525,18 +525,18 @@ const Components = {
                         pane.classList.add('hidden');
                     }
                 });
-                
+
                 this.activeIndex = index;
-                
-                if (config.onChange) config.onChange(index, config.tabs[index]);
-                
+
+                if (config.onChange) {config.onChange(index, config.tabs[index]);}
+
                 return this;
             },
-            
+
             getActive() {
                 return this.activeIndex;
             },
-            
+
             updateContent(index, content) {
                 const pane = tabsElement.querySelector(`.tab-pane[data-index="${index}"]`);
                 if (pane) {
@@ -544,7 +544,7 @@ const Components = {
                 }
                 return this;
             },
-            
+
             destroy() {
                 tabsElement.querySelectorAll('.tab-button').forEach(button => {
                     button.removeEventListener('click', handleTabClick);
