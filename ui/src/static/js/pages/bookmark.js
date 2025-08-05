@@ -104,7 +104,7 @@ const BookmarksManager = {
             const [bookmarks, categories, topics] = await Promise.all([
                 BookmarkAPI.getAll(),
                 Category.getAll(),
-                API.topics.getAll()
+                Topic.getAll()
             ]);
 
             this.state.bookmarks = bookmarks || [];

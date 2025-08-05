@@ -30,3 +30,12 @@ pub struct AddCategories {
 pub struct RemoveCategories {
     pub categories: Vec<String>,
 }
+
+#[derive(serde::Deserialize, Debug)]
+pub struct BmUpdateReq {
+    pub title: Option<String>,
+    pub url: Option<String>,
+    pub content: Option<String>,
+    pub referrer: Option<String>,
+    pub status: Option<String>,
+}

@@ -51,6 +51,7 @@ pub async fn router<S>(ctx: crate::ctx::Ctx) -> axum::Router<S> {
                 .route("/bm", routing::post(link::bookmark::create))
                 .route("/bm/{id}", routing::get(link::bookmark::get))
                 .route("/bm", routing::get(link::bookmark::list))
+                .route("/bm/{id}", routing::put(link::bookmark::update))
                 .route("/bm/{id}", routing::delete(link::bookmark::delete))
                 .route(
                     "/bm/add-cats/{id}",

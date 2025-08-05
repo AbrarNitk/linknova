@@ -1,6 +1,6 @@
 mod types;
 
-use crate::controller::link::types::{BmCreateReq, BmResponse};
+use crate::controller::link::types::{BmCreateReq, BmResponse, BmUpdateReq};
 use crate::ctx::Ctx;
 
 #[tracing::instrument(name = "service::bookmark-create", skip_all)]
@@ -33,6 +33,67 @@ pub async fn get(ctx: &Ctx, id: i64) -> Result<BmResponse, types::BookmarkError>
     let row = linkdb::bookmark::get_by_id(&ctx.pg_pool, id).await?;
     let result = types::from_db_response(row);
     Ok(result)
+}
+
+#[tracing::instrument(name = "service::bookmark-update", skip_all)]
+pub async fn update(
+    ctx: &Ctx,
+    user_id: &str,
+    id: i64,
+    req: BmUpdateReq,
+) -> Result<BmResponse, types::BookmarkError> {
+    use sqlx::QueryBuilder;
+
+    let now = chrono::Utc::now();
+
+    // Build dynamic query with only the fields that are provided
+    let mut query_builder = QueryBuilder::new("UPDATE linknova_bookmark SET updated_on = ");
+    query_builder.push_bind(now);
+
+    if let Some(title) = req.title {
+        query_builder.push(", title = ");
+        query_builder.push_bind(title);
+    }
+
+    if let Some(url) = req.url {
+        query_builder.push(", url = ");
+        query_builder.push_bind(url);
+    }
+
+    if let Some(content) = req.content {
+        query_builder.push(", content = ");
+        query_builder.push_bind(content);
+    }
+
+    if let Some(referrer) = req.referrer {
+        query_builder.push(", referrer = ");
+        query_builder.push_bind(referrer);
+    }
+
+    if let Some(status) = req.status {
+        query_builder.push(", status = ");
+        query_builder.push_bind(status);
+    }
+
+    // Add WHERE clause
+    query_builder.push(" WHERE id = ");
+    query_builder.push_bind(id);
+    query_builder.push(" AND user_id = ");
+    query_builder.push_bind(user_id);
+
+    // Execute the update query
+    let query = query_builder.build();
+    let result = query.execute(&ctx.pg_pool).await?;
+
+    if result.rows_affected() == 0 {
+        return Err(types::BookmarkError::NotFound(format!(
+            "Bookmark with id {} not found or not owned by user",
+            id
+        )));
+    }
+
+    // Return the updated bookmark
+    get(ctx, id).await
 }
 
 // todo: pagination,

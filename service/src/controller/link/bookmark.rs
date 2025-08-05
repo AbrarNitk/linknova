@@ -32,6 +32,22 @@ pub async fn get(State(ctx): State<Ctx>, Path(id): Path<i64>) -> Response {
     }
 }
 
+#[tracing::instrument(name = "controller::bookmark::update", skip_all)]
+pub async fn update(
+    State(ctx): State<Ctx>,
+    Extension(user): Extension<AuthUser>,
+    Path(id): Path<i64>,
+    axum::Json(request): axum::Json<types::BmUpdateReq>,
+) -> Response {
+    match link::bookmark::update(&ctx, user.user_id.as_str(), id, request).await {
+        Ok(r) => response::success(axum::http::StatusCode::OK, r),
+        Err(e) => {
+            tracing::error!("err: {:?}", e);
+            response::error(axum::http::StatusCode::INTERNAL_SERVER_ERROR, e.to_string())
+        }
+    }
+}
+
 #[derive(serde::Deserialize)]
 pub struct ListQueryParams {
     status: Option<String>,
