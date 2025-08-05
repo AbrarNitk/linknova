@@ -22,72 +22,24 @@ const LoginPage = {
             });
         }
 
-        // Enter key handling
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && !this.state.isLoading) {
-                const loginButton = document.getElementById('login-button');
-                if (loginButton && !loginButton.disabled) {
-                    loginButton.click();
+        // Basic form validation before submission
+        const loginForm = document.getElementById('login-form');
+        if (loginForm) {
+            loginForm.addEventListener('submit', (e) => {
+                const username = document.getElementById('username')?.value?.trim() || '';
+                const password = document.getElementById('password')?.value || '';
+                
+                if (!username || !password) {
+                    e.preventDefault(); // Only prevent if validation fails
+                    this.showError('Please enter both username and password');
+                    return false;
                 }
-            }
-        });
-    },
 
-    async handleLogin() {
-        if (this.state.isLoading) {return;}
-
-        const usernameInput = document.getElementById('username');
-        const passwordInput = document.getElementById('password');
-        const rememberMeInput = document.getElementById('remember-me');
-
-        const username = usernameInput?.value?.trim() || '';
-        const password = passwordInput?.value || '';
-        const rememberMe = rememberMeInput?.checked || false;
-
-        if (!username || !password) {
-            this.showError('Please enter both username and password');
-            return;
-        }
-
-        try {
-            this.setLoading(true);
-            this.hideError();
-
-            // Simple POST to login API - let server handle redirect
-            const response = await fetch('/-/ln/api/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    username: username,
-                    password: password,
-                    rememberMe: rememberMe
-                })
+                // If validation passes, let the form submit naturally
+                // The server will handle the redirect and cookie setting
+                this.setLoading(true);
+                this.hideError();
             });
-
-
-            console.log(response.url);
-
-            // Let the server handle redirect naturally
-            if (response.redirected) {
-                window.location.href = response.url;
-                return;
-            }
-
-            const data = await response.json();
-
-            if (response.ok) {
-                // Success - but no redirect, show message
-                Utils.showToast('Login successful!', 'success');
-            } else {
-                this.showError(data.message || 'Login failed');
-            }
-
-        } catch (error) {
-            this.showError('Login failed. Please try again.');
-        } finally {
-            this.setLoading(false);
         }
     },
 
@@ -128,16 +80,22 @@ const LoginPage = {
     },
 
     showError(message) {
-        const errorAlert = document.getElementById('error-alert');
         const errorMessage = document.getElementById('error-message');
+        const errorText = document.getElementById('error-text');
 
-        errorMessage.textContent = message;
-        errorAlert.classList.remove('hidden');
+        if (errorText) {
+            errorText.textContent = message;
+        }
+        if (errorMessage) {
+            errorMessage.classList.remove('hidden');
+        }
     },
 
     hideError() {
-        const errorAlert = document.getElementById('error-alert');
-        errorAlert.classList.add('hidden');
+        const errorMessage = document.getElementById('error-message');
+        if (errorMessage) {
+            errorMessage.classList.add('hidden');
+        }
     }
 };
 
